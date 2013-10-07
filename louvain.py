@@ -36,6 +36,8 @@ def first_phase(A, m, n, k, tsh):
                 #print "moving %s to %s" %(i, c)
                 C.move(i, c)
                 new_Q += gain
+        print "new %s" % new_Q
+        print "old %s" % old_Q                
         if (new_Q - old_Q)/old_Q < 1 + tsh:
             break
     return filter(lambda c: len(c) > 0, C.get_communities()), new_Q
