@@ -3,7 +3,8 @@ import modularity as mod
 import numpy as np
 from scipy import sparse
 
-def louvain(A, m, n, k):
+
+def louvain(A, m, n, k, filewriter):
     B = A
     new_n = n
     new_k = k
@@ -11,11 +12,12 @@ def louvain(A, m, n, k):
     D = None
     while True:
         (C,q) = first_phase(B, m, new_n, new_k, 0.001)
+        filewriter.write_array("".join(["com", str(i)]), C)
+        filewriter.write_array("".join(["q", str(i)]), q)
         if D:
             if len(D) == len(C):
                 return
         D = C 
-        print "%s'th iteration yields C = %s and q= %s" % (i, C, q)
         i += 1
         B = second_phase(B, C, new_n)
         new_n = B.shape[1]
