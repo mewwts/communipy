@@ -16,6 +16,6 @@ class Communities(object):
     def get_nodes(self, s):
         return np.nonzero(self._nodes == s)[0]
 
-    def get_communities(self):
+    def get_non_empty_communities(self):
         # implement with filter?
         return [ a for a in [np.nonzero(self._nodes == i)[0] for i in xrange(len(self._nodes))] if a.shape[0] > 0]
