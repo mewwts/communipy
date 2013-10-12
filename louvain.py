@@ -41,14 +41,14 @@ def first_phase(A, m, n, k, tsh):
             break
     return C.get_non_empty_communities(), new_Q
 
-def second_phase(A, C, n):
-    B = make_C_matrix(A, C, n)
+def second_phase(A, coms, n):
+    B = make_C_matrix(A, coms, n)
     return B.dot(A.dot(B.T))
 
-
-def make_C_matrix(A, C, n):
-    lil = sparse.lil_matrix((len(C), n))
-    for i,c in enumerate(C):
+#do this with COO matrix instead
+def make_C_matrix(A, coms, n):
+    lil = sparse.lil_matrix((len(coms), n))
+    for i,c in enumerate(coms):
         for j in c:
             lil[i, j] = 1
     return sparse.csr_matrix(lil)

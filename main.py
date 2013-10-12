@@ -8,9 +8,9 @@ from output import Matwriter
 
 def main():
     #filename = '../Data/example.csv'
-    #filename = '../Data/karate.gml'
+    filename = '../Data/karate.gml'
     #filename = '../Data/lesmis.gml'
-    filename = '../Data/as-22july06.gml'
+    #filename = '../Data/as-22july06.gml'
     #filename = '../Data/polbooks.gml'
     #filename = "../Data/MAT_MIN_20111221.mat" 
     #A = sparse.csr_matrix(np.genfromtxt(filename, delimiter=',')) # from the articel

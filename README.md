@@ -1,3 +1,3 @@
 communitydetection
 ==================
-Implementation of some community detection algorithms
+Implementation of some community detection algorithms.
