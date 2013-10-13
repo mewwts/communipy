@@ -1,11 +1,11 @@
 Improvements:
 - implement louvain.make_C_matrix with a COO to make it much faster
 - store np.sum(k[c]) for all communities c.
-- 
+- parallelize some calculation
 
 
 
 Issues:
 - Absolute vs. relative gain in modularity in louvain.py
-
-
+- map with lambda apparantly slower than list comprehension
+-

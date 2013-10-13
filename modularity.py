@@ -10,12 +10,16 @@ def movein_modularity(row, m, k, C, i):
 
     # get the unique communities present in the fastest way. (oct 7)
     coms = {}.fromkeys(map(lambda x: C.get_community(x), row.indices)).keys()
+    
     # for each of the communities, calculate the strength
     com_sum_k = map(lambda x: np.sum(k[C.get_nodes(x)]), coms) #paralellisere? Legge i communities.py?
+    
+    #com_sum_k = [np.sum(k[C.get_nodes(x)]) for x in coms]
+    
     # find the nodes in each community present in this row.
     com_intersect_row = map(lambda x: np.intersect1d(C.get_nodes(x), row.indices), coms)
-    #print row.indices, [C.get_neighbors(x) for x in coms], com_intersect_row
-    # 
+    
+    # calculate the edge sum of all nodes connected to i for each community
     com_sum_a = map(lambda y: np.sum(row.data[np.in1d(row.indices, y)]), com_intersect_row)
     mods = np.multiply((1/m),com_sum_a) - np.multiply((1/(2*m**2)),np.multiply(k[i],com_sum_k))
 
@@ -23,7 +27,6 @@ def movein_modularity(row, m, k, C, i):
 
 def moveout_modularity(row, m, k, com, i):
     if len(com) > 1:
-        print com, i
         mod = (-1/m)*np.sum(row.data[np.in1d(row.indices, com)]) + (1/(2*m**2))*k[i]*np.sum(k[com]) - (k[i]**2)/(2*m**2) 
     else:
         mod = - (k[i]**2)/(2*m**2) 
@@ -40,7 +43,7 @@ def get_max_gain(row, m, k, C, i):
     mods = map(lambda x: (x[0] + moveout, x[1]), mods)
 
     new_mods = filter(lambda x: x[1] != C.get_community(i), mods) # speedup by putting this in movein?
-    
+
     if new_mods:
         max_mod = max(new_mods)
         return max_mod[0], max_mod[1]

@@ -11,9 +11,9 @@ def louvain(A, m, n, k, filewriter):
     i = 1
     D = None
     while True:
-        (C,q) = first_phase(B, m, new_n, new_k, 0.01)
-        filewriter.write_array("".join(["com", str(i)]), C)
-        filewriter.write_array("".join(["q", str(i)]), q)
+        (C,q) = first_phase(B, m, new_n, new_k, 0.03)
+        #filewriter.write_array("".join(["com", str(i)]), C)
+        #filewriter.write_array("".join(["q", str(i)]), q)
         if D:
             if len(D) == len(C):
                 print "D %s" % D
