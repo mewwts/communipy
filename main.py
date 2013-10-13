@@ -15,7 +15,7 @@ def main():
     #filename = "../Data/MAT_MIN_20111221.mat" 
     #A = sparse.csr_matrix(np.genfromtxt(filename, delimiter=',')) # from the articel
     #A = sparse.csr_matrix(io.loadmat(filename)['mat'])
-    A = nx.to_scipy_sparse_matrix(nx.read_gml(filename)) #Karate
+    A = nx.to_scipy_sparse_matrix(nx.read_gml(filename)) #gmls
     n = A.shape[1]
     k = np.array(A.sum(1)).reshape(n) # the degree sequence
     m = 0.5*A.sum() # the number of edges

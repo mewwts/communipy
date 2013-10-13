@@ -14,11 +14,11 @@ def louvain(A, m, n, k, filewriter):
         (C,q) = first_phase(B, m, new_n, new_k, 0.03)
         #filewriter.write_array("".join(["com", str(i)]), C)
         #filewriter.write_array("".join(["q", str(i)]), q)
+        print C, q
         if D:
             if len(D) == len(C):
-                print "D %s" % D
-                print "C %s" % C
-                return
+                # this is the wrong test
+                return 
         D = C 
         i += 1
         B = second_phase(B, C, new_n)
