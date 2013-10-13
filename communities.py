@@ -30,7 +30,7 @@ class Communities(object):
             return []
         #return np.nonzero(self._nodes == s)[0]
 
-    def get_non_empty_communities(self):
+    def get_communities(self):
         
-        return self._communities.values()
+        return [list(a) for a in self._communities.values()]
         #return [ a for a in [np.nonzero(self._nodes == i)[0] for i in xrange(len(self._nodes))] if a.shape[0] > 0]

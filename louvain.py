@@ -39,7 +39,7 @@ def first_phase(A, m, n, k, tsh):
                 new_Q += gain    
         if new_Q - old_Q < tsh:
             break
-    return C.get_non_empty_communities(), new_Q
+    return C.get_communities(), new_Q
 
 def second_phase(A, coms, n):
     B = make_C_matrix(A, coms, n)
