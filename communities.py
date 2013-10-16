@@ -1,29 +1,41 @@
 import numpy as np
 class Communities(object):
 
-    def __init__(self, vector):
-        self._nodes = np.array(vector)
-        self._communities = {i:set([i]) for i in vector}
-        #self._strength = {i:k_i for i,k_i in enumerate(k)}
+    def __init__(self, iterable, k):
+        self._nodes = np.array(iterable)
+        self._communities = {i:set([i]) for i in self._nodes}
+        self._strength = {i:k[i] for i in xrange(len(k))}
+        
+    def move(self, i, s, k_i):
+        s_i = self.get_community(i)
+        self._communities[s_i].remove(i)
+        if not self._communities[s_i]:
+            del self._communities[s_i]
+            del self._strength[s_i]
+        # remove strength from s_i
+        # add strength to s
+        try:
+            self._strength[s_i] -= k_i    
+        except KeyError:
+            #print "wooops"
+            pass #sys.exc_clean()
+        self._strength[s] += k_i
+        self._nodes[i] = s
+        self._communities[s].add(i)
+        
+    def get_community_strength(self, x):
+        return self._strength[x]
 
-    def move(self, x, s):
-        s_x = self.get_community(x)
-        self._communities[s_x].remove(x)
-        if not self._communities[s_x]:
-            del self._communities[s_x]
-            #del self._strength[s_x]
-
-        self._nodes[x] = s
-        self._communities[s].add(x)
-
-    
     def get_community(self, x):
         return self._nodes[x]
 
     def get_neighbors(self, x):
         a = self._communities[self.get_community(x)]
         return list(a)
-        
+
+    def get_neighbors_not_i(self, x):
+        a = self._communities[self.get_community(x)]
+        return list(a.difference([x]))
         #return np.nonzero(self._nodes == self.get_community(x))[0]
 
     def get_nodes(self, s):
