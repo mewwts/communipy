@@ -7,13 +7,13 @@ from itertools import chain
 
 def louvain(A, m, n, k, filewriter):
 
-    
+    i = 1
     while True:
         C = Communities(range(n), k)
         old_q =  mod.modularity(A, k, m, C)
         (coms,q) = first_phase(A, m, n, k, C, 0.001)
-        #filewriter.write_array("".join(["com", str(i)]), C)
-        #filewriter.write_array("".join(["q", str(i)]), q)
+        filewriter.write_array("".join(["com_", str(i)]), C.get_communities_renamed)
+        filewriter.write_array("".join(["q_", str(i)]), q)
         print coms, q
         A = second_phase(A, coms, n)
         n = A.shape[1]
@@ -21,7 +21,8 @@ def louvain(A, m, n, k, filewriter):
         
         if not (q > old_q):
             return
-        old_q = q   
+        old_q = q
+        i += 1   
 
 def first_phase(A, m, n, k, C, tsh):
     

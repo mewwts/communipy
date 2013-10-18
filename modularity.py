@@ -13,14 +13,16 @@ def modularity(A, k, m, C):
     return q
 
 def movein_modularity(row, m, k, C, i):
-
+    
     # get the unique communities present in the fastest way. (oct 7)
-    coms = {}.fromkeys((C.get_community(x) for x in row.indices)).keys()
+    getcom = C.get_community
+    c_i = getcom(i)
+    coms = {}.fromkeys((getcom(x) for x in row.indices if getcom(x) != c_i)).keys()
     
     # for each of the communities, calculate the strength
-    c = k[i]/(2*m**2)
+    const = k[i]/(2*m**2)
     #com_sum_k = (c*np.sum(k[C.get_nodes(x)]) for x in coms)
-    com_sum_k = (c*C.get_community_strength(x) for x in coms)
+    com_sum_k = (const*C.get_community_strength(x) for x in coms)
     
     # find the nodes in each community present in this row.
     com_intersect_row = (np.intersect1d(C.get_nodes(x), row.indices) for x in coms)
@@ -29,7 +31,6 @@ def movein_modularity(row, m, k, C, i):
     com_sum_a = ((1/m)*np.sum(row.data[np.in1d(row.indices, y)]) for y in com_intersect_row)
 
     mods = it.imap(op.sub, com_sum_a, com_sum_k)
-    
     return it.izip(mods, coms)
 
 def moveout_modularity(row, C, m, k, i):
@@ -52,8 +53,7 @@ def get_max_gain(row, m, k, C, i):
     """
     mods = movein_modularity(row, m, k, C, i)
     moveout = moveout_modularity(row, C, m, k, i)
-    c_i = C.get_community(i)
-    mods = [(mod[0] + moveout, mod[1]) for mod in mods if mod[1] != c_i]
+    mods = [(mod[0] + moveout, mod[1]) for mod in mods]
     if mods:
         max_mod = max(mods)
         return max_mod[0], max_mod[1]

@@ -4,6 +4,7 @@ Improvements:
 - [ ] parallelize some calculation
 - [ ] initialize C with generatorexpressions
 - [ ] make new A directly?
+- [ ] Consider rewriting movein, moveout and get_max_gain to same f.
 
 Issues:
 - [x] Absolute gain in modularity in louvain.py
