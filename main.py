@@ -19,7 +19,7 @@ def main():
     n = A.shape[1]
     k = np.array(A.sum(1)).reshape(n) # the degree sequence
     m = 0.5*A.sum() # the number of edges
-    
+    print m,k
     filewriter = Matwriter(filename)
     t = time.time()
     louvain.louvain(A, m, n, k, filewriter)

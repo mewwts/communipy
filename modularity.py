@@ -2,13 +2,14 @@ import numpy as np
 import itertools as it
 import operator as op
 
-def modularity(A, k, m, coms):
+def modularity(A, k, m, C):
     """
-    We expect coms to be of the same size as the number of rows and columns in A
+    This is now ENTIRELY CORRECT YEESSSSS
     """
     q = 0.0
-    for i,com in enumerate(coms):
-        q += (1/2*m)*np.sum(A[i,:].data[A[i,:].indices == i]) - (np.sum(k[i])/(2*m))**2
+    for name, c in C.get_communities().iteritems():
+        rowslice = A[c,:]
+        q += (1/(2*m))*np.sum(rowslice.data[np.in1d(rowslice.indices, c)]) - (C.get_community_strength(name)/(2*m))**2
     return q
 
 def movein_modularity(row, m, k, C, i):
@@ -33,13 +34,11 @@ def movein_modularity(row, m, k, C, i):
 
 def moveout_modularity(row, C, m, k, i):
     #com = C.get_neighbors(i) ## PERHAPS NOT I???
+    
     com_less_i = C.get_neighbors_not_i(i)
     k_i = k[i]
-    
     k_c = np.sum(k[com_less_i])
-    
     a = (-1.0/m)*np.sum(row.data[np.in1d(row.indices, com_less_i)])
-    
     ks = (2.0/(4*m**2))*k_i*k_c # + np.sum(row.data[row.indices == i])/(2*m) 
     
     mod = a + ks 
@@ -52,7 +51,6 @@ def get_max_gain(row, m, k, C, i):
     vertex i there.
     """
     mods = movein_modularity(row, m, k, C, i)
-    #print list(mods)
     moveout = moveout_modularity(row, C, m, k, i)
     c_i = C.get_community(i)
     mods = [(mod[0] + moveout, mod[1]) for mod in mods if mod[1] != c_i]

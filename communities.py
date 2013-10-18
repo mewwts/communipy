@@ -5,20 +5,17 @@ class Communities(object):
         self._nodes = np.array(iterable)
         self._communities = {i:set([i]) for i in self._nodes}
         self._strength = {i:k[i] for i in xrange(len(k))}
-        
+
     def move(self, i, s, k_i):
         s_i = self.get_community(i)
         self._communities[s_i].remove(i)
         if not self._communities[s_i]:
             del self._communities[s_i]
             del self._strength[s_i]
-        # remove strength from s_i
-        # add strength to s
         try:
             self._strength[s_i] -= k_i    
         except KeyError:
-            #print "wooops"
-            pass #sys.exc_clean()
+            pass
         self._strength[s] += k_i
         self._nodes[i] = s
         self._communities[s].add(i)
@@ -28,10 +25,10 @@ class Communities(object):
 
     def get_community(self, x):
         return self._nodes[x]
-
+ 
     def get_neighbors(self, x):
         a = self._communities[self.get_community(x)]
-        return list(a)
+        return np.array(a)
 
     def get_neighbors_not_i(self, x):
         a = self._communities[self.get_community(x)]
@@ -45,7 +42,15 @@ class Communities(object):
             return []
         #return np.nonzero(self._nodes == s)[0]
 
+    def get_node_list(self):
+        return self._nodes
+
     def get_communities(self):
-        
-        return [list(a) for a in self._communities.values()]
+        return {key: list(value) for key, value in self._communities.iteritems()}#[list(a) for a in self._communities.values()]
         #return [ a for a in [np.nonzero(self._nodes == i)[0] for i in xrange(len(self._nodes))] if a.shape[0] > 0]
+    
+    def get_communities_renamed(self):
+        # sort keys
+        keys = sorted(self._communities.keys())
+        # rename communities and return
+        return {i:list(self._communities[x]) for i,x in enumerate(keys)}
