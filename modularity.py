@@ -10,9 +10,6 @@ def diagonal_modularity(diag, k, m):
     return q
 
 def modularity(A, k, m, C):
-    """
-    This is now ENTIRELY CORRECT YEESSSSS, but very slow
-    """
     q = 0.0
     for name, c in C.get_communities().iteritems():
         rowslice = A[c,:]
@@ -28,7 +25,7 @@ def movein_modularity(row, m, k, C, i):
     
     # for each of the communities, calculate the strength
     const = k[i]/(2*m**2)
-    #com_sum_k = (c*np.sum(k[C.get_nodes(x)]) for x in coms)
+    
     getstrength = C.get_community_strength
     com_sum_k = (const*getstrength(x) for x in coms)
     
@@ -68,6 +65,7 @@ def get_max_gain(row, m, k, C, i):
         return -1, -1
 
 # Graveyard:
+# com_sum_k = (c*np.sum(k[C.get_nodes(x)]) for x in coms)
 # mods = np.multiply((1/m),com_sum_a) - np.multiply((1/(2*m**2)),np.multiply(k[i],com_sum_k))
 # com_intersect_row = it.imap(lambda x: np.intersect1d(C.get_nodes(x), row.indices), coms)
 # com_sum_a = map(lambda y: np.sum(row.data[np.in1d(row.indices, y)]), com_intersect_row)
