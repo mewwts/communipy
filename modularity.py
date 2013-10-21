@@ -2,9 +2,16 @@ import numpy as np
 import itertools as it
 import operator as op
 
+def diagonal_modularity(diag, k, m):
+    #q = (1/(2*m))*np.sum(diag) - np.sum(k**2)/(4*m**2)
+    q = 0.0
+    for i in xrange(len(diag)):
+        q += (1/(2*m))*diag[i] - (k[i]/(2*m))**2
+    return q
+
 def modularity(A, k, m, C):
     """
-    This is now ENTIRELY CORRECT YEESSSSS
+    This is now ENTIRELY CORRECT YEESSSSS, but very slow
     """
     q = 0.0
     for name, c in C.get_communities().iteritems():
@@ -13,7 +20,7 @@ def modularity(A, k, m, C):
     return q
 
 def movein_modularity(row, m, k, C, i):
-    
+
     # get the unique communities present in the fastest way. (oct 7)
     getcom = C.get_community
     c_i = getcom(i)
@@ -22,7 +29,8 @@ def movein_modularity(row, m, k, C, i):
     # for each of the communities, calculate the strength
     const = k[i]/(2*m**2)
     #com_sum_k = (c*np.sum(k[C.get_nodes(x)]) for x in coms)
-    com_sum_k = (const*C.get_community_strength(x) for x in coms)
+    getstrength = C.get_community_strength
+    com_sum_k = (const*getstrength(x) for x in coms)
     
     # find the nodes in each community present in this row.
     com_intersect_row = (np.intersect1d(C.get_nodes(x), row.indices) for x in coms)
@@ -34,7 +42,6 @@ def movein_modularity(row, m, k, C, i):
     return it.izip(mods, coms)
 
 def moveout_modularity(row, C, m, k, i):
-    #com = C.get_neighbors(i) ## PERHAPS NOT I???
     
     com_less_i = C.get_neighbors_not_i(i)
     k_i = k[i]

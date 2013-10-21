@@ -1,4 +1,5 @@
 import numpy as np
+
 class Communities(object):
 
     def __init__(self, iterable, k):
@@ -40,7 +41,7 @@ class Communities(object):
             return list(self._communities[s])
         except KeyError:
             return []
-        #return np.nonzero(self._nodes == s)[0]
+        
 
     def get_node_list(self):
         return self._nodes
