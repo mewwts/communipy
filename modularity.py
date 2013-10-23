@@ -1,14 +1,11 @@
 import numpy as np
 import itertools as it
-import operator as op
+import numexpr as nr
+from operator import itemgetter
 
 def diagonal_modularity(diag, k, m):
-    #q = (1/(2*m))*np.sum(diag) - np.sum(k**2)/(4*m**2)
-    q = 0.0
-    for i in xrange(len(diag)):
-        q += (1/(2*m))*diag[i] - (k[i]/(2*m))**2
-    return q
-
+    return (1/(2*m))*nr.evaluate("sum(diag)") -(1/(4*m**2))*sum(i**2 for i in k) #(1/(4*m**2))*nr.evaluate("sum(k**2)")
+    
 def modularity(A, k, m, C):
     q = 0.0
     for name, c in C.get_communities().iteritems():
@@ -16,63 +13,76 @@ def modularity(A, k, m, C):
         q += (1/(2*m))*np.sum(rowslice.data[np.in1d(rowslice.indices, c)]) - (C.get_community_strength(name)/(2*m))**2
     return q
 
-def movein_modularity(row, m, k, C, i):
+def calc_modularity(row, m, n, k, C, i):
+    
+    c_i = C.get_community(i)
 
-    # get the unique communities present in the fastest way. (oct 7)
-    getcom = C.get_community
-    c_i = getcom(i)
-    coms = {}.fromkeys((getcom(x) for x in row.indices if getcom(x) != c_i)).keys()
+    # find the neighboring communities, exluding the community of i itself.
+    coms = {}.fromkeys((C.get_community(x) for x in row.indices if C.get_community(x) != c_i)).keys()
+
+    # If there are no neighbouring communities we exit
+    if not coms:
+        return None
     
     # for each of the communities, calculate the strength
     const = k[i]/(2*m**2)
+    com_sum_k = (const*C.get_community_strength(x) for x in coms)
     
-    getstrength = C.get_community_strength
-    com_sum_k = (const*getstrength(x) for x in coms)
-    
-    # find the nodes in each community present in this row.
-    com_intersect_row = (np.intersect1d(C.get_nodes(x), row.indices) for x in coms)
-    
+    # For each of the neighboring communities, find the nodes of this community attached to i.
+    com_intersect_row = (np.intersect1d(C.get_nodes(x), row.indices) for x in coms)    
+
     # calculate the edge sum of all nodes connected to i for each community
     com_sum_a = ((1/m)*np.sum(row.data[np.in1d(row.indices, y)]) for y in com_intersect_row)
+    
+    # calculate the actual modularity including the gain/loss of moving i out of community c_i
+    moveout = moveout_modularity(row, C, m, k, i)
+    
+    mods = (a - b + moveout for a,b in it.izip(com_sum_a, com_sum_k))
+   
+    return it.izip(coms, mods)
+     
+def alt_calc_modularity(row, m, n, k, C, i):
+    getcom = C.get_community
+    getcomstrength = C.get_community_strength
 
-    mods = it.imap(op.sub, com_sum_a, com_sum_k)
-    return it.izip(mods, coms)
+    modularities = {}
+    const = k[i]/(2*m**2)
+    moveout = moveout_modularity(row, C, m, k, i)
+    c_i = getcom(i)
+    for k,j in enumerate(row.indices):
+        c_j = getcom(j)
+        if c_j == c_i:
+            continue
+        if c_j in modularities:
+            modularities[c_j] += row.data[k]/m
+        else:
+            modularities[c_j] = - const*getcomstrength(c_j) + moveout
+            modularities[c_j] += row.data[k]/m
+
+    if not modularities:
+        return -1, -1
+    return max(modularities.iteritems(), key=itemgetter(1))
+
 
 def moveout_modularity(row, C, m, k, i):
-    
+    com = C.get_community(i)
     com_less_i = C.get_neighbors_not_i(i)
     k_i = k[i]
-    k_c = np.sum(k[com_less_i])
+    k_c = C.get_community_strength(com) - k_i 
     a = (-1.0/m)*np.sum(row.data[np.in1d(row.indices, com_less_i)])
-    ks = (2.0/(4*m**2))*k_i*k_c # + np.sum(row.data[row.indices == i])/(2*m) 
-    
+    ks = (2.0/(4*m**2))*k_i*k_c
     mod = a + ks 
-    
     return mod
 
-def get_max_gain(row, m, k, C, i):
+def get_max_gain(row, m, n, k, C, i):
     """
     returns the community c and the corresponding gain in modularity of moving
     vertex i there.
     """
-    mods = movein_modularity(row, m, k, C, i)
-    moveout = moveout_modularity(row, C, m, k, i)
-    mods = [(mod[0] + moveout, mod[1]) for mod in mods]
-    if mods:
-        max_mod = max(mods)
-        return max_mod[0], max_mod[1]
-    else:
-        return -1, -1
-
-# Graveyard:
-# com_sum_k = (c*np.sum(k[C.get_nodes(x)]) for x in coms)
-# mods = np.multiply((1/m),com_sum_a) - np.multiply((1/(2*m**2)),np.multiply(k[i],com_sum_k))
-# com_intersect_row = it.imap(lambda x: np.intersect1d(C.get_nodes(x), row.indices), coms)
-# com_sum_a = map(lambda y: np.sum(row.data[np.in1d(row.indices, y)]), com_intersect_row)
-# coms = {}.fromkeys(map(lambda x: C.get_community(x), row.indices)).keys()
-# com_sum_k = map(lambda x: np.sum(k[C.get_nodes(x)]), coms) #paralellisere? Legge i communities.py?
-# com_sum_k = [np.sum(k[C.get_nodes(x)]) for x in coms]
-# coms = {C.get_community(a) : np.intersect1d(C.get_neighbors(a), row.indices) for a in row.indices} # these are interscted
-# com_sum_a = map(lambda y: np.sum(row[0, y].data), com_intersect_row)
-# com_intersect_row = map(lambda x: x in row_dict, coms)
-# com_intersect_row = [filter(lambda x: x in row_dict, C.get_nodes(y)) for y in coms]
+    return alt_calc_modularity(row, m, n, k, C, i)
+    # mods =  calc_modularity(row, m, n, k, C, i)
+    # try:
+    #     mod = max(mods)
+    #     return mod[0], mod[1]
+    # except TypeError:
+    #     return -1, -1

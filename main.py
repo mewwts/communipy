@@ -4,6 +4,7 @@ from scipy import sparse, io
 import louvain as louvain 
 import networkx as nx 
 from output import Matwriter
+from operator import add
 
 
 def main():
@@ -16,9 +17,9 @@ def main():
     #A = sparse.csr_matrix(np.genfromtxt(filename, delimiter=',')) # from the articel
     #A = sparse.csr_matrix(io.loadmat(filename)['mat'])
     A = nx.to_scipy_sparse_matrix(nx.read_gml(filename)) #gmls
-    
     n = A.shape[1]
-    k = np.array(A.sum(1)).reshape(n) # the degree sequence
+    k = list(reduce(add, A).data)
+    #k = np.array(A.sum(1)).reshape(n) # the degree sequence
     m = 0.5*A.sum() # the number of edges
     filewriter = Matwriter(filename)
     t = time.time()

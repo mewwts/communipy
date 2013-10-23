@@ -12,3 +12,4 @@ class Matwriter(object):
     def write_array(self, key, list):
         io.savemat(self.name, {key: list}, oned_as='row', appendmat=True)
         print key, list
+    
