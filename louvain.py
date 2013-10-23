@@ -17,7 +17,6 @@ def louvain(A, m, n, k, filewriter):
         A = second_phase(A, coms, n)
         n = A.shape[1]
         k = np.array(A.sum(1)).reshape(n)
-        #print mod.diagonal_modularity(A.diagonal(), k, m)
         if not (q > old_q):
             print i
             return
@@ -26,9 +25,11 @@ def louvain(A, m, n, k, filewriter):
 
 def first_phase(A, m, n, k, C, tsh):
     
-    new_Q = mod.modularity(A, k, m, C)
     get_max_gain = mod.get_max_gain
     move = C.move
+
+    new_Q = mod.diagonal_modularity(A.diagonal(), k, m)
+    
     while True:
         old_Q = new_Q
         for i in xrange(n):

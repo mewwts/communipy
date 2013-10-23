@@ -4,7 +4,7 @@ import numexpr as nr
 from operator import itemgetter
 
 def diagonal_modularity(diag, k, m):
-    return (1/(2*m))*nr.evaluate("sum(diag)") -(1/(4*m**2))*sum(i**2 for i in k) #(1/(4*m**2))*nr.evaluate("sum(k**2)")
+    return (1/(2*m))*nr.evaluate("sum(diag)") -(1/(4*m**2))*sum(i**2 for i in k)# #(1/(4*m**2))*nr.evaluate("sum(k**2)")
     
 def modularity(A, k, m, C):
     q = 0.0
@@ -46,19 +46,26 @@ def alt_calc_modularity(row, m, n, k, C, i):
     getcomstrength = C.get_community_strength
 
     modularities = {}
-    const = k[i]/(2*m**2)
-    moveout = moveout_modularity(row, C, m, k, i)
+    k_i = k[i]
+    const = k_i/(2*m**2)
     c_i = getcom(i)
+    k_c_i = getcomstrength(c_i) - k_i 
+
+    moveout = (2.0/(4*m**2))*k_i*k_c_i
+    
     for k,j in enumerate(row.indices):
         c_j = getcom(j)
         if c_j == c_i:
+            if i != j:
+                moveout -= row.data[k]/m
             continue
         if c_j in modularities:
             modularities[c_j] += row.data[k]/m
         else:
-            modularities[c_j] = - const*getcomstrength(c_j) + moveout
-            modularities[c_j] += row.data[k]/m
-
+            modularities[c_j] = - const*getcomstrength(c_j)  + row.data[k]/m
+    
+    for key in modularities:
+        modularities[key] += moveout
     if not modularities:
         return -1, -1
     return max(modularities.iteritems(), key=itemgetter(1))
@@ -69,9 +76,9 @@ def moveout_modularity(row, C, m, k, i):
     com_less_i = C.get_neighbors_not_i(i)
     k_i = k[i]
     k_c = C.get_community_strength(com) - k_i 
-    a = (-1.0/m)*np.sum(row.data[np.in1d(row.indices, com_less_i)])
+    a = (1.0/m)*np.sum(row.data[np.in1d(row.indices, com_less_i)])
     ks = (2.0/(4*m**2))*k_i*k_c
-    mod = a + ks 
+    mod = -a + ks 
     return mod
 
 def get_max_gain(row, m, n, k, C, i):
