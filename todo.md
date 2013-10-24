@@ -4,9 +4,9 @@ Improvements:
 - [ ] parallelize some calculation
 - [x] initialize C with generator
 - [ ] make new A directly?
-- [ ] Consider rewriting movein, moveout and get_max_gain to same f.
-- [ ] Replace set with numpy array in modularity.py
+- [x] Consider rewriting movein, moveout and get_max_gain to same f.
 - [ ] Use numexpr instead of regular numpy
+- [ ] Try with PYPU
 
 Issues:
 - [x] Absolute gain in modularity in louvain.py

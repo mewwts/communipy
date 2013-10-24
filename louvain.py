@@ -10,13 +10,13 @@ def louvain(A, m, n, k, filewriter):
     old_q = mod.diagonal_modularity(A.diagonal(), k, m) 
     while True:
         C = Communities(xrange(n), k)
-        (coms,q) = first_phase(A, m, n, k, C, 0.001)
+        (coms,q) = first_phase(A, m, n, k, C, 0.002)
         #filewriter.write_array("".join(["com_", str(i)]), C.get_communities_renamed())
         #filewriter.write_array("".join(["q_", str(i)]), q)
         print coms, q
         A = second_phase(A, coms, n)
         n = A.shape[1]
-        k = np.array(A.sum(1)).reshape(n)
+        k = [np.sum(row.data) for row in A]
         if not (q > old_q):
             print i
             return

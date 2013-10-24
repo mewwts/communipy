@@ -1,4 +1,4 @@
-import numpy as np
+
 
 class Communities(object):
 
@@ -28,8 +28,7 @@ class Communities(object):
         return self._nodes[x]
  
     def get_neighbors(self, x):
-        return np.array(list(self._communities[self.get_community(x)]))
-        #return self._communities[self.get_community(x)]
+        return list(self._communities[self.get_community(x)])
 
     def get_neighbors_not_i(self, x):
         a = self._communities[self.get_community(x)]
@@ -37,26 +36,26 @@ class Communities(object):
             #perhaps not do copy?9
             b = a.copy()
             b.remove(x)
-            return np.array(list(b))
+            return list(b)
         except TypeError:
-            return np.array([])
+            return []
 
     def get_nodes(self, s):
         try: 
-            return np.array(list(self._communities[s]))
+            return list(self._communities[s])
         except KeyError:
             # return set([])
-            return np.array([])
+            return []
         
     def get_node_list(self):
-        return np.array(self._nodes)
+        return self._nodes
 
     def get_communities(self):
-        return {key: np.array(list(value)) for key, value in self._communities.iteritems()}#[list(a) for a in self._communities.values()]
+        return {key: list(value) for key, value in self._communities.iteritems()}#[list(a) for a in self._communities.values()]
         #return [ a for a in [np.nonzero(self._nodes == i)[0] for i in xrange(len(self._nodes))] if a.shape[0] > 0]
     
     def get_communities_renamed(self):
         # sort keys
         keys = sorted(self._communities.keys())
         # rename communities and return
-        return {i:np.array(list(self._communities[x])) for i,x in enumerate(keys)}
+        return {i:list(self._communities[x]) for i,x in enumerate(keys)}
