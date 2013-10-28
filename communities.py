@@ -44,7 +44,6 @@ class Communities(object):
         try: 
             return list(self._communities[s])
         except KeyError:
-            # return set([])
             return []
         
     def get_node_list(self):
@@ -59,3 +58,6 @@ class Communities(object):
         keys = sorted(self._communities.keys())
         # rename communities and return
         return {i:list(self._communities[x]) for i,x in enumerate(keys)}
+    
+    def get_number_of_communities(self):
+        return len(self._communities.keys())

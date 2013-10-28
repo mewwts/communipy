@@ -10,38 +10,47 @@ def louvain(A, m, n, k, filewriter):
     old_q = mod.diagonal_modularity(A.diagonal(), k, m) 
     while True:
         C = Communities(xrange(n), k)
-        (coms,q) = first_phase(A, m, n, k, C, 0.002)
+        (coms,q) = first_phase(A, m, n, k, C, old_q, 0.002)
         #filewriter.write_array("".join(["com_", str(i)]), C.get_communities_renamed())
         #filewriter.write_array("".join(["q_", str(i)]), q)
         print coms, q
         A = second_phase(A, coms, n)
         n = A.shape[1]
-        k = [np.sum(row.data) for row in A]
+        k = [float(A.data[A.indptr[j]:A.indptr[j+1]].sum()) for j in xrange(n)]
+        
         if not (q > old_q):
             print i
+            # print mod.diagonal_modularity(A.diagonal(), k, m)
             return
+        
         old_q = q
         i += 1   
 
-def first_phase(A, m, n, k, C, tsh):
+def first_phase(A, m, n, k, C, init_q, tsh):
     
-    get_max_gain = mod.get_max_gain
+    alt_calc_modularity = mod.alt_calc_modularity
     move = C.move
-
-    new_Q = mod.diagonal_modularity(A.diagonal(), k, m)
+    new_q = init_q 
     
     while True:
-        old_Q = new_Q
+        old_q = new_q
+        
         for i in xrange(n):
-            row = A[i,:]
-            (c, gain) = get_max_gain(row, m, n, k, C, i)
+            indices = A.indices[A.indptr[i]:A.indptr[i+1]]
+            data = A.data[A.indptr[i]:A.indptr[i+1]]
+            (c, gain) = alt_calc_modularity(data, indices, m, k, C, i)
             if gain > 0:
-                print "moving %s to %s" %(i, c)
+                #print "moving %s to %s" %(i, c)
                 move(i, c, k[i])
-                new_Q += gain    
-        if new_Q - old_Q < tsh:
+                new_q += gain
+
+        print 'there are %d communities' % C.get_number_of_communities()
+        print 'newQ = %f, oldQ = %f' %(new_q, old_q)
+        
+        if new_q - old_q < tsh:
             break
-    return C.get_communities_renamed(), new_Q
+    
+    return C.get_communities_renamed(), new_q
 
 def second_phase(A, coms, n):
     B = make_C_matrix(A, coms, n)
