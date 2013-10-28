@@ -17,7 +17,7 @@ def main():
     #filename = '../Data/dolphins.mat'
     #filename = '../Data/as-22july06.gml'
     #filename = '../Data/polbooks.gml'
-    filename = "../Data/MAT_MIN_20111221.mat" 
+    filename = "../Data/MAT_MIN_20111221_sym.mat" 
     #A = io.loadmat(filename)['Problem'][0][0][2].tocsr()
     #A = sparse.csr_matrix(np.genfromtxt(filename, delimiter=',')) # from the articel
     A = sparse.csr_matrix(io.loadmat(filename)['mat'])

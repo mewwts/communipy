@@ -13,30 +13,28 @@ def modularity(A, k, m, C):
         q += (1.0/(2*m))*np.sum(rowslice.data[np.in1d(rowslice.indices, c)]) - (C.get_community_strength(name)/(2*m))**2
     return q
 
-def alt_calc_modularity(data, indices, m, k, C, i):
+def calc_modularity(data, indices, m, k, C, i):
     getcom = C.get_community
     getcomstrength = C.get_community_strength
 
     modularities = {}
     k_i = k[i]
     c_i = getcom(i)
-    const = k_i/(2.0*m**2)
-    
+    const = k_i/(2.0*m**2)    
     moveout = (2.0/(4.0*m**2))*k_i*(getcomstrength(c_i) - k_i)
     
-    for k,j in enumerate(indices):
+    for l,j in enumerate(indices): 
         
         c_j = getcom(j)
-        
         if c_j == c_i:
             if i != j:
-                moveout -= data[k]/m
+                moveout -= data[l]/m
             continue
-        
+
         if c_j in modularities:
-            modularities[c_j] += data[k]/m
+            modularities[c_j] += data[l]/m
         else:
-            modularities[c_j] = - const*getcomstrength(c_j)  + data[k]/m
+            modularities[c_j] = - const*getcomstrength(c_j)  + data[l]/m
     
     if not modularities:
         return -1, -1.0

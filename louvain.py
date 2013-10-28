@@ -13,7 +13,7 @@ def louvain(A, m, n, k, filewriter):
         (coms,q) = first_phase(A, m, n, k, C, old_q, 0.002)
         #filewriter.write_array("".join(["com_", str(i)]), C.get_communities_renamed())
         #filewriter.write_array("".join(["q_", str(i)]), q)
-        print coms, q
+        print len(coms), q
         A = second_phase(A, coms, n)
         n = A.shape[1]
         k = [float(A.data[A.indptr[j]:A.indptr[j+1]].sum()) for j in xrange(n)]
@@ -28,7 +28,7 @@ def louvain(A, m, n, k, filewriter):
 
 def first_phase(A, m, n, k, C, init_q, tsh):
     
-    alt_calc_modularity = mod.alt_calc_modularity
+    calc_modularity = mod.calc_modularity
     move = C.move
     new_q = init_q 
     
@@ -38,7 +38,7 @@ def first_phase(A, m, n, k, C, init_q, tsh):
         for i in xrange(n):
             indices = A.indices[A.indptr[i]:A.indptr[i+1]]
             data = A.data[A.indptr[i]:A.indptr[i+1]]
-            (c, gain) = alt_calc_modularity(data, indices, m, k, C, i)
+            (c, gain) = calc_modularity(data, indices, m, k, C, i)
             if gain > 0:
                 #print "moving %s to %s" %(i, c)
                 move(i, c, k[i])
