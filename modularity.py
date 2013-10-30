@@ -23,18 +23,18 @@ def calc_modularity(data, indices, m, k, C, i):
     const = k_i/(2.0*m**2)    
     moveout = (2.0/(4.0*m**2))*k_i*(getcomstrength(c_i) - k_i)
     
-    for l,j in enumerate(indices): 
+    for ind,j in enumerate(indices): 
         
         c_j = getcom(j)
         if c_j == c_i:
             if i != j:
-                moveout -= data[l]/m
+                moveout -= data[ind]/m
             continue
 
         if c_j in modularities:
-            modularities[c_j] += data[l]/m
+            modularities[c_j] += data[ind]/m
         else:
-            modularities[c_j] = - const*getcomstrength(c_j)  + data[l]/m
+            modularities[c_j] = data[ind]/m - const*getcomstrength(c_j)
     
     if not modularities:
         return -1, -1.0

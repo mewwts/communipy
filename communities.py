@@ -61,3 +61,7 @@ class Communities(object):
     
     def get_number_of_communities(self):
         return len(self._communities.keys())
+
+    def dump(self, i):
+        import cPickle as pickle
+        pickle.dump(self, open("".join(['pickled_', 'coms', str(i), '.p']), "wb" ))
