@@ -17,7 +17,7 @@ def calc_modularity(data, indices, m, k, C, i):
     getcom = C.get_community
     getcomstrength = C.get_community_strength
 
-    modularities = {}
+    movein = {}
     k_i = k[i]
     c_i = getcom(i)
     const = k_i/(2.0*m**2)    
@@ -31,12 +31,12 @@ def calc_modularity(data, indices, m, k, C, i):
                 moveout -= data[ind]/m
             continue
 
-        if c_j in modularities:
-            modularities[c_j] += data[ind]/m
+        if c_j in movein:
+            movein[c_j] += data[ind]/m
         else:
-            modularities[c_j] = data[ind]/m - const*getcomstrength(c_j)
+            movein[c_j] = data[ind]/m - const*getcomstrength(c_j)
     
-    if not modularities:
+    if not movein:
         return -1, -1.0
     
-    return max(((i[0], i[1] + moveout) for i in modularities.iteritems()), key=itemgetter(1))
+    return max(((i[0], i[1] + moveout) for i in movein.iteritems()), key=itemgetter(1))

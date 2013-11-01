@@ -1,5 +1,3 @@
-
-
 class Communities(object):
 
     def __init__(self, iterable, k):
@@ -50,9 +48,8 @@ class Communities(object):
         return self._nodes
 
     def get_communities(self):
-        return {key: list(value) for key, value in self._communities.iteritems()}#[list(a) for a in self._communities.values()]
-        #return [ a for a in [np.nonzero(self._nodes == i)[0] for i in xrange(len(self._nodes))] if a.shape[0] > 0]
-    
+        return {key: list(value) for key, value in self._communities.iteritems()}
+        
     def get_communities_renamed(self):
         # sort keys
         keys = sorted(self._communities.keys())
