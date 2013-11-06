@@ -9,11 +9,15 @@ class Matwriter(object):
         datestring = dt.datetime.now().strftime("%Y-%m-%d-%M-%S")
         writename = os.path.basename(filename)
         self.name = "".join(["results/", writename, datestring])
-    
+        self.dict = {}
+
     def write_nodelist(self, coms, n, iter):
-        nodes = np.arange(n)
-        comlist = np.zeros(n)
+        nodes = np.arange(n, dtype=int)
+        comlist = np.zeros(n, dtype=int)
         for com in coms.iteritems():
             comlist[com[1]] = com[0]
-        io.savemat(self.name, {"".join([self.name, '_nodes_', str(iter)]): nodes,
-            "".join([self.name, '_communities_', str(iter)]): comlist}, oned_as='row', appendmat=True)
+        self.dict["".join(['nodes_', str(iter)])] = nodes
+        self.dict["".join(['communities_', str(iter)])] = comlist
+    
+    def close(self):
+        io.savemat(self.name, self.dict, oned_as='row', appendmat=True) 

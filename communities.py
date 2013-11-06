@@ -31,7 +31,7 @@ class Communities(object):
     def get_neighbors_not_i(self, x):
         a = self._communities[self.get_community(x)]
         try:
-            #perhaps not do copy?9
+            #perhaps not do copy?
             b = a.copy()
             b.remove(x)
             return list(b)
