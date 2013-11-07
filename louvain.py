@@ -13,9 +13,6 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
         C = Communities(xrange(n), k)
         (C,q) = first_phase(A, m, n, k, C, old_q, tsh, verbose)
         if filewriter:
-            pass
-            #P = Pool(1)
-            #P.apply_async(filewriter.write_nodelist, args=(C.get_communities_renamed(), n, i))
             filewriter.write_nodelist(C.get_communities_renamed(), n, i)
         coms = C.get_communities_renamed()
         

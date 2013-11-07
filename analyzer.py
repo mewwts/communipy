@@ -1,6 +1,6 @@
 import datetime as dt
 import matplotlib.pyplot as plt
-
+import operator as op
 import os
 
 import numpy as np
@@ -10,7 +10,8 @@ class Analyzer:
         self.passes = []
         self.i = 0
         datestring = dt.datetime.now().strftime("%Y-%m-%d-%M-%S")
-        writename = os.path.basename(filename)
+        #writename = os.path.basename(filename)
+        writename = "lolse"
         self.name = "".join(["exports/", writename, 'CSD_plot', datestring])
 
     def add_pass(self, coms):
@@ -24,11 +25,21 @@ class Analyzer:
         self.i +=1
 
     def show(self):
+        n = len(self.passes)
+        max_val = 0
+        min_val = 100000000000 
+        for dictionary in self.passes:
+            val = max(dictionary.iteritems(), key=op.itemgetter(1))[1]
+            max_val = val if val > max_val else max_val
+            val = min(dictionary.iteritems(), key=op.itemgetter(1))[1]
+            min_val = val if val < min_val else min_val
+        
+        le_range = (min_val, max_val)
         fig = plt.figure(1)
-        for i, passi in enumerate(self.passes):
-            com = passi.values()
-            fig.add_subplot(2,2,i)
-            plt.title('Iteration ' + str(i + 1))
-            plt.hist(com, bins=max(com),align='mid', histtype='bar', facecolor='g', alpha=0.75)
-        plt.suptitle('Component Size Distribution')
+        #bins = max_val-min_val
+        coms = [p.values() for p in self.passes]
+        plt.hist(coms, range=le_range, align='mid', histtype='bar', alpha=0.5, label=['Pass ' + str(i+1) for i in range(n)])
+        plt.legend()
+        plt.title('Component Size Distribution')
+        #plt.show()
         plt.savefig(self.name)
