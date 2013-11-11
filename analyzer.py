@@ -1,5 +1,5 @@
 import datetime as dt
-import matpltlib
+import matplotlib
 import matplotlib.pyplot as plt
 import operator as op
 import os
