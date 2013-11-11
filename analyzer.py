@@ -7,6 +7,7 @@ import numpy as np
 
 class Analyzer:
     def __init__(self, filename):
+        plt.ioff()
         self.passes = []
         self.i = 0
         datestring = dt.datetime.now().strftime("%Y-%m-%d-%M-%S")
