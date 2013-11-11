@@ -40,7 +40,7 @@ class Analyzer:
         le_range = (min_val, max_val)
         fig = plt.figure(1)
         coms = [p.values() for p in self.passes]
-        plt.hist(coms, range=le_range, align='mid', histtype='bar', alpha=0.5, label=['Pass ' + str(i+1) for i in range(n)])
+        plt.hist(coms, range=le_range, align='mid', histtype='bar', alpha=0.5, log=True, label=['Pass ' + str(i+1) for i in range(n)])
         plt.legend()
         plt.title('Component Size Distribution')
         #plt.show()
