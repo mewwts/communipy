@@ -1,4 +1,5 @@
 import datetime as dt
+import matpltlib
 import matplotlib.pyplot as plt
 import operator as op
 import os
@@ -7,6 +8,7 @@ import numpy as np
 
 class Analyzer:
     def __init__(self, filename):
+        matplotlib.use('Agg')
         plt.ioff()
         self.passes = []
         self.i = 0
@@ -37,7 +39,6 @@ class Analyzer:
         
         le_range = (min_val, max_val)
         fig = plt.figure(1)
-        #bins = max_val-min_val
         coms = [p.values() for p in self.passes]
         plt.hist(coms, range=le_range, align='mid', histtype='bar', alpha=0.5, label=['Pass ' + str(i+1) for i in range(n)])
         plt.legend()
