@@ -1,5 +1,6 @@
 import datetime as dt
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import operator as op
 import os
@@ -8,7 +9,6 @@ import numpy as np
 
 class Analyzer:
     def __init__(self, filename):
-        matplotlib.use('Agg')
         plt.ioff()
         self.passes = []
         self.i = 0
