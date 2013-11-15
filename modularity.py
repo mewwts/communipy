@@ -20,8 +20,10 @@ def calc_modularity(data, indices, m, k, C, i):
     movein = {}
     k_i = k[i]
     c_i = getcom(i)
-    const = k_i/(2.0*m**2)    
+    const = k_i/(2.0*m**2)
+    
     moveout = (2.0/(4.0*m**2))*k_i*(getcomstrength(c_i) - k_i)
+
     
     for ind,j in enumerate(indices): 
         

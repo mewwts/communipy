@@ -22,7 +22,8 @@ def initialize(filepath, args):
         import networkx as nx 
         A = nx.to_scipy_sparse_matrix(nx.read_gml(filepath))
     elif ending == '.gz':
-        import networkx as nx 
+        filename = os.path.splitext(filename)[0]
+        import networkx as nx
         A = nx.to_scipy_sparse_matrix(nx.read_adjlist(filepath))   
     else:
         print "this file extension is not recognized."
