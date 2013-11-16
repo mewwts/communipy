@@ -36,8 +36,6 @@ class Analyzer:
         for dictionary in self.passes:
             val = max(dictionary.iteritems(), key=op.itemgetter(1))[1]
             max_val = val if val > max_val else max_val
-            val = min(dictionary.iteritems(), key=op.itemgetter(1))[1]
-            min_val = val if val < min_val else min_val
         
         order = 10**floor(log(max_val, 10))
 
@@ -46,21 +44,21 @@ class Analyzer:
         plt.figure(dpi=100)
         plt.title('Component Size Distribution')
         # coms = [p.values() for p in self.passes]
-        n = float(len(self.passes))
+        bin_num = le_range[1]/order
+        while bin_num < 4:
+            bin_num *=2
 
         for i,p in enumerate(self.passes):
 
-            plt.subplot(ceil(n/2), 2,i+1)
+            plt.subplot(ceil(n/2.0),2, i+1)
             plt.xlabel('Size')
             plt.ylabel('# communities')
             com = p.values()
-            plt.title('Pass ' + str(i + 1))
-            plt.ylim(0,5)
-            plt.xlim(0,max_val+0.5)
-            #le_bins = np.append(np.arange(0, le_range[1], le_range[1]/10), le_range[1])
-            ns, bins, patches = plt.hist(com, range=le_range, bins=le_range[1]/order, align='mid', histtype='bar', alpha=0.5, label=['Pass ' + str(i)], color=colors[i % len(colors)])
-            # locs, labels = plt.xticks()
+            plt.title('Pass ' + str(i+1))
+            plt.ylim(0, 5)
+            plt.xlim(0, max_val+0.5)
+            ns, bins, patches = plt.hist(com, range=le_range, bins=bin_num, align='mid', histtype='bar', alpha=0.5, label=['Pass ' + str(i)], color=colors[i % len(colors)])
             plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-            plt.xlim((0,le_range[1]))
+            plt.xlim((0, le_range[1]))
         plt.show()    
         plt.savefig(self.name)
