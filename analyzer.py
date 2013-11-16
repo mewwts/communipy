@@ -6,8 +6,11 @@ import operator as op
 import os
 from math import ceil, log, floor
 import numpy as np
-import seaborn as sns
-sns.set_color_palette("deep", desat=.6)
+try:
+    import seaborn as sns
+    sns.set_color_palette("deep", desat=.6)
+except ImportError:
+    print 'Fancy plots disabled do Seaborn not installed'
 
 class Analyzer:
     def __init__(self, filename):
@@ -55,10 +58,11 @@ class Analyzer:
             plt.ylabel('# communities')
             com = p.values()
             plt.title('Pass ' + str(i+1))
-            plt.ylim(0, 5)
+            #plt.ylim(0, 5)
             plt.xlim(0, max_val+0.5)
             ns, bins, patches = plt.hist(com, range=le_range, bins=bin_num, align='mid', histtype='bar', alpha=0.5, label=['Pass ' + str(i)], color=colors[i % len(colors)])
             plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+            plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
             plt.xlim((0, le_range[1]))
         plt.show()    
         plt.savefig(self.name)
