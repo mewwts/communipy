@@ -1,5 +1,4 @@
 import numpy as np
-#import itertools as it
 import numexpr as nr
 from operator import itemgetter
 

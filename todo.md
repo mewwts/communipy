@@ -8,6 +8,7 @@ Improvements:
 - [x] Slice matrix by indptr or "for row in A": No gain
 - [x] Get number of communities and print
 - [ ] m*(m-1) vs m**2
+- [x] CSD histograms
 
 Issues:
 - [x] Absolute gain in modularity in louvain.py
