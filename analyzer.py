@@ -6,6 +6,7 @@ import operator as op
 import os
 from math import ceil, log, floor
 import numpy as np
+import cPickle as pickle
 try:
     import seaborn as sns
     sns.set_color_palette("deep", desat=.6)
@@ -33,40 +34,4 @@ class Analyzer:
         self.i +=1
 
     def show(self):
-        n = len(self.passes)
-        max_val = 0
-        min_val = 100000000000 
-        for dictionary in self.passes:
-            val = max(dictionary.iteritems(), key=op.itemgetter(1))[1]
-            max_val = val if val > max_val else max_val
-        
-        order = 10**floor(log(max_val, 10))
-
-        le_range = (0, ceil(float(max_val)/order)*order)
-        colors = ['indianred', 'tan', 'cadetblue', 'seagreen']
-        plt.figure(dpi=100)
-        plt.title('Component Size Distribution')
-        # coms = [p.values() for p in self.passes]
-        bin_num = le_range[1]/order
-        while bin_num < 4:
-            bin_num *=2
-        max_height = 0
-        
-        for i,p in enumerate(self.passes):
-
-            plt.subplot(ceil(n/2.0),2, i+1)
-            plt.xlabel('Size')
-            plt.ylabel('# communities')
-            com = p.values()
-            plt.title('Pass ' + str(i+1))
-            #plt.ylim(0, 5)
-            plt.xlim(0, max_val)
-            ns, bins, patches = plt.hist(com, range=le_range, bins=bin_num, align='mid', histtype='bar', alpha=0.5, label=['Pass ' + str(i)], color=colors[i % len(colors)])
-            plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-            plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-            plt.xlim((0, le_range[1]))
-            m = max(p.get_height() for p in patches)
-            max_height = m if m > max_height else max_height
-        plt.ylim(0, max_height)
-        plt.show()    
-        plt.savefig(self.name)
+        pickle.dump(self.passes, open("".join(['MAT_MIN_LCC_coms','.p']), "wb" ))
