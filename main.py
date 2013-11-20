@@ -35,7 +35,8 @@ def initialize(filepath, args):
     m = 0.5*A.sum()
     
     filewriter = Matwriter(filename) if args.output else None
-    cytowriter = Cytowriter(filename, args.cytoscape) if args.cytoscape else None
+    cytowriter = Cytowriter(filename, args.cytoscape[0], args.cytoscape[1:]) if args.cytoscape else None
+
     analyzer = Analyzer(filename) if args.csd else None
 
     tsh = args.treshold if args.treshold else 0.02
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     parser.add_argument("-o", "--output", help="Output too file in ./results/", action="store_true")
     parser.add_argument("-d", "--dump", help="Dump communities", action="store_true")
     parser.add_argument("-a", "--csd", help="Plot component size distribution when finished", action="store_true")
-    parser.add_argument("-c", "--cytoscape", help="Export communitiy structure to use with cytoscape. \
+    parser.add_argument("-c", "--cytoscape", nargs='+', help="Export communitiy structure to use with cytoscape. \
         The number indicates the minimum number of nodes within a community to visualize it", type=int)
     args = parser.parse_args()
 

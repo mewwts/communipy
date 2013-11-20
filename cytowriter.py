@@ -4,7 +4,8 @@ import os
 
 class Cytowriter:
 
-    def __init__(self, filename, tsh):
+    def __init__(self, filename, tsh, passes):
+        self._passes = np.array(passes)
         self._i = 1
         self._tsh = tsh
         import datetime as dt
@@ -39,7 +40,9 @@ class Cytowriter:
         self._i += 1
 
     def close(self):
-        np.savetxt("".join([self._name, '.csv']), self._array, delimiter=";", fmt='%i')
+        a = self._array[:,self._passes].copy()
+        a = np.unique(a.view(np.dtype((np.void, a.dtype.itemsize*a.shape[1])))).view(a.dtype).reshape(-1, a.shape[1])
+        np.savetxt("".join([self._name, '.csv']), a, delimiter=";", fmt='%i')
 
     def _export_sif(self, A):
         A = A[self._nodes,:][:, self._nodes]

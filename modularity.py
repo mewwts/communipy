@@ -3,7 +3,7 @@ import numexpr as nr
 from operator import itemgetter
 
 def diagonal_modularity(diag, k, m):
-    return (1.0/(2*m))*nr.evaluate("sum(diag)") -(1/(4*m**2))*sum(i**2 for i in k)# #(1/(4*m**2))*nr.evaluate("sum(k**2)")
+    return (1.0/(2*m))*nr.evaluate("sum(diag)") -(1/(4*m**2))*sum(i**2 for i in k)
     
 def modularity(A, k, m, C):
     q = 0.0
