@@ -3,9 +3,14 @@ import numexpr as nr
 from operator import itemgetter
 
 def diagonal_modularity(diag, k, m):
+    """Calculates the modularity when all vertices are in their own community"""
     return (1.0/(2*m))*nr.evaluate("sum(diag)") -(1/(4*m**2))*sum(i**2 for i in k)
     
 def modularity(A, k, m, C):
+    """ 
+    Only use for verification purposes. This is horribly slow, and calc_modularity 
+    returns the correct modularity gain.
+    """
     q = 0.0
     for name, c in C.get_communities().iteritems():
         rowslice = A[c,:]
@@ -22,8 +27,7 @@ def calc_modularity(data, indices, m, k, C, i):
     const = k_i/(2.0*m**2)
     
     moveout = (2.0/(4.0*m**2))*k_i*(getcomstrength(c_i) - k_i)
-
-    
+   
     for ind,j in enumerate(indices): 
         
         c_j = getcom(j)
