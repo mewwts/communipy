@@ -53,7 +53,7 @@ if __name__ == '__main__':
     parser.add_argument("-v", "--verbose", help="Turn verbosity on", action="store_true")
     parser.add_argument("-o", "--output", help="Output too file in ./results/", action="store_true")
     parser.add_argument("-d", "--dump", help="Dump communities", action="store_true")
-    parser.add_argument("-a", "--csd", help="Plot component size distribution when finished", action="store_true")
+    parser.add_argument("-a", "--csd", help="Output component sizes when finished", action="store_true")
     parser.add_argument("-viz", "--vizualize", nargs='+', help="Export communitiy structure to vizualize with e.g. networkx. \
         arg[0] indicates the minimum number of nodes within a community to visualize it, \
         arg[1] which pass that should be the vertices \

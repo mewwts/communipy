@@ -1,27 +1,18 @@
 import datetime as dt
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import operator as op
 import os
 from math import ceil, log, floor
 import numpy as np
 import cPickle as pickle
-try:
-    import seaborn as sns
-    sns.set_color_palette("deep", desat=.6)
-except ImportError:
-    print 'Fancy plots disabled as Seaborn is not installed'
+
 
 class Analyzer:
     def __init__(self, filename):
         plt.ioff()
         self.passes = []
         self.i = 0
-        datestring = dt.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         writename = os.path.basename(filename)
-        #writename = "lolse"
-        self.name = "".join(["exports/", writename, '_CSD_plot_', datestring])
+        self.name = "".join(["exports/", writename, '_CSD_plot_'])
 
     def add_pass(self, coms):
         if self.i == 0:

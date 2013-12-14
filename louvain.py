@@ -24,7 +24,7 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
                 filewriter.close()
                 'Community structure outputted to .mat-file'
             if cytowriter:
-                cytowriter.close()
+                # cytowriter.close()
                 'Community structure outputted to file'
             if analyzer:
                 analyzer.show()
