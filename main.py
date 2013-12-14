@@ -2,7 +2,7 @@
 import numpy as np 
 import louvain as louvain 
 from output import Matwriter
-from cytowriter import Cytowriter
+from cytowriter import Visualizer
 from analyzer import Analyzer
 import argparse
 from scipy import sparse
@@ -21,10 +21,10 @@ def initialize(filepath, args):
     elif ending == '.gml':
         import networkx as nx 
         A = nx.to_scipy_sparse_matrix(nx.read_gml(filepath))
-    elif ending == '.gz':
+    elif ending == '.gz' or ending == '.txt':
         filename = os.path.splitext(filename)[0]
         import networkx as nx
-        A = nx.to_scipy_sparse_matrix(nx.read_adjlist(filepath))   
+        A = nx.to_scipy_sparse_matrix(nx.read_adjlist(filepath))  
     else:
         print "this file extension is not recognized."
         return
@@ -35,7 +35,7 @@ def initialize(filepath, args):
     m = 0.5*A.sum()
     
     filewriter = Matwriter(filename) if args.output else None
-    cytowriter = Cytowriter(filename, args.cytoscape[0], args.cytoscape[1:]) if args.cytoscape else None
+    cytowriter = Visualizer(filename, args.vizualize[0], args.vizualize[1], args.vizualize[2]) if args.vizualize else None
 
     analyzer = Analyzer(filename) if args.csd else None
 
@@ -54,8 +54,12 @@ if __name__ == '__main__':
     parser.add_argument("-o", "--output", help="Output too file in ./results/", action="store_true")
     parser.add_argument("-d", "--dump", help="Dump communities", action="store_true")
     parser.add_argument("-a", "--csd", help="Plot component size distribution when finished", action="store_true")
-    parser.add_argument("-c", "--cytoscape", nargs='+', help="Export communitiy structure to use with cytoscape. \
-        The number indicates the minimum number of nodes within a community to visualize it", type=int)
+    parser.add_argument("-viz", "--vizualize", nargs='+', help="Export communitiy structure to vizualize with e.g. networkx. \
+        arg[0] indicates the minimum number of nodes within a community to visualize it, \
+        arg[1] which pass that should be the vertices \
+        arg[2] the pass that indicates the community structure. \
+        Note that this is a stupid method, and if you indicate pass 7 as arg[2] and there are only 2 passes \
+        it _will_ fail.", type=int)
     args = parser.parse_args()
 
     if os.path.isfile(args.path_to_file):

@@ -19,6 +19,7 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
         if not (q > old_q):
             #print "pass: %d. # of comms: %d. Q = %f" % (i,len(coms),q)
             print "It took %s seconds" % (time.time() - t)
+            print "pass: %d. # of comms: %d. Q = %f" % (i,len(coms),q)
             if filewriter:
                 filewriter.close()
                 'Community structure outputted to .mat-file'
@@ -33,10 +34,7 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
         if dump:
             C.dump(i)
         if cytowriter:
-            if i == 1:
-                cytowriter.add_pass(coms, A)
-            else:
-                cytowriter.add_pass(coms)
+            cytowriter.add_pass(coms, A)
         if analyzer:
             analyzer.add_pass(coms)
 
