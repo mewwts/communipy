@@ -27,7 +27,7 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
             #     'Community structure outputted to file'
             if analyzer:
                 analyzer.show()
-                print 'CSD plotted to file'
+                print 'CSD dumped to file'
             return
 
         if dump:
