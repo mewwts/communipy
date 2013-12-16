@@ -17,15 +17,14 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
         coms = C.get_communities_renamed()
 
         if not (q > old_q):
-            #print "pass: %d. # of comms: %d. Q = %f" % (i,len(coms),q)
-            print "It took %s seconds" % (time.time() - t)
-            print "pass: %d. # of comms: %d. Q = %f" % (i,len(coms),q)
+            print 'It took %s seconds' % (time.time() - t)
+            # print "pass: %d. # of comms: %d. Q = %f" % (i,len(coms),q)
             if filewriter:
                 filewriter.close()
                 'Community structure outputted to .mat-file'
-            if cytowriter:
-                # cytowriter.close()
-                'Community structure outputted to file'
+            # if cytowriter:
+            #     # cytowriter.close()
+            #     'Community structure outputted to file'
             if analyzer:
                 analyzer.show()
                 print 'CSD plotted to file'
@@ -39,7 +38,7 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
             analyzer.add_pass(coms)
 
         if verbose:
-            print "pass: %d. # of comms: %d. Q = %f" % (i,len(coms),q)
+            print 'pass: %d. # of comms: %d. Q = %f' % (i,len(coms),q)
         
         A = second_phase(A, coms, n)
         n = A.shape[1]

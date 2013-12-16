@@ -1,4 +1,3 @@
-
 import numpy as np 
 import louvain as louvain 
 from output import Matwriter
@@ -24,6 +23,7 @@ def initialize(filepath, args):
     elif ending == '.gz' or ending == '.txt':
         filename = os.path.splitext(filename)[0]
         import networkx as nx
+        A = nx.to_scipy_sparse_matrix(nx.read_weighted_edgelist(filepath, delimiter =' '))  
         A = nx.to_scipy_sparse_matrix(nx.read_adjlist(filepath))  
     else:
         print "this file extension is not recognized."
