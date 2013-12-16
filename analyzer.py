@@ -8,7 +8,6 @@ import cPickle as pickle
 
 class Analyzer:
     def __init__(self, filename):
-        plt.ioff()
         self.passes = []
         self.i = 0
         writename = os.path.basename(filename)
