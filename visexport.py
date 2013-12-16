@@ -2,10 +2,10 @@ import csv
 import numpy as np
 import os
 
-class Visualizer:
+class Viswriter:
 
     def __init__(self, filename, tsh, passnr, compass):
-
+        self._pass = passnr
         self._compass = compass
         self._i = 1
         self._tsh = tsh

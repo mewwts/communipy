@@ -1,8 +1,8 @@
 import numpy as np 
 import louvain as louvain 
-from output import Matwriter
-from cytowriter import Visualizer
-from analyzer import Analyzer
+from matexport import Matwriter
+from visexport import Viswriter
+from csdexport import Csdwriter
 import argparse
 from scipy import sparse
 import os
@@ -35,7 +35,7 @@ def initialize(filepath, args):
     m = 0.5*A.sum()
     
     filewriter = Matwriter(filename) if args.output else None
-    cytowriter = Visualizer(filename, args.vizualize[0], args.vizualize[1], args.vizualize[2]) if args.vizualize else None
+    cytowriter = Viswriter(filename, args.vizualize[0], args.vizualize[1], args.vizualize[2]) if args.vizualize else None
 
     analyzer = Analyzer(filename) if args.csd else None
 
@@ -43,6 +43,8 @@ def initialize(filepath, args):
     verbose = args.verbose if args.verbose else False
     dump = args.dump if args.dump else False
 
+    if verbose:
+        print 'File loaded. %d nodes in the network and total weight is %.2f ' % (n, m)
     
     louvain.louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump)
 

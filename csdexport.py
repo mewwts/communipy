@@ -6,12 +6,12 @@ import numpy as np
 import cPickle as pickle
 
 
-class Analyzer:
+class Csdwriter:
     def __init__(self, filename):
         self.passes = []
         self.i = 0
         writename = os.path.basename(filename)
-        self.name = "".join(["exports/", writename, '_CSD_plot_'])
+        self.name = "".join(["exports/", writename])
 
     def add_pass(self, coms):
         if self.i == 0:
