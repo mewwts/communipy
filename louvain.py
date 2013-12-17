@@ -41,9 +41,8 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
         if verbose:
             print 'pass: %d. # of comms: %d. Q = %f' % (i,len(coms),q)
         if i == 3:
-            
             G = nx.from_scipy_sparse_matrix(A)
-            nx.write_weighted_edgelist(G, 'hack.txt')
+            nx.write_weighted_edgelist(G, 'exports/hack.txt')
         n = A.shape[1]
         k = [float(A.data[A.indptr[j]:A.indptr[j+1]].sum()) for j in xrange(n)]
         old_q = q
