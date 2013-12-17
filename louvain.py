@@ -3,6 +3,7 @@ import modularity as mod
 import numpy as np
 from scipy import sparse
 import time 
+import networkx as nx
 
 def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
 
@@ -29,7 +30,7 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
                 analyzer.show()
                 print 'CSD dumped to file'
             return
-
+        A = second_phase(A, coms, n)
         if dump:
             C.dump(i)
         if cytowriter:
@@ -39,8 +40,10 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
 
         if verbose:
             print 'pass: %d. # of comms: %d. Q = %f' % (i,len(coms),q)
-        
-        A = second_phase(A, coms, n)
+        if i == 3:
+            
+            G = nx.from_scipy_sparse_matrix(A)
+            nx.write_weighted_edgelist(G, 'hack.txt')
         n = A.shape[1]
         k = [float(A.data[A.indptr[j]:A.indptr[j+1]].sum()) for j in xrange(n)]
         old_q = q
