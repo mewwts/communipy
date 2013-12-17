@@ -68,9 +68,6 @@ class Viswriter:
     
     def _export_edgelist(self, A):
         n = A.shape[1]
-        # import networkx as nx
-        # nx.write_weighted_edgelist(nx.from_scipy_sparse_matrix(A), 'exports/nx500edgelist.txt')
-        # nx.write_gml(nx.from_scipy_sparse_matrix(A), 'exports/nx500edgml.gml')
         with open("".join([self._name, 'adjlist' ,'.txt']), 'w') as new:
             for i in xrange(n):
                 data = A.data[A.indptr[i]:A.indptr[i+1]]
