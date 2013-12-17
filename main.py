@@ -37,7 +37,7 @@ def initialize(filepath, args):
     filewriter = Matwriter(filename) if args.output else None
     cytowriter = Viswriter(filename, args.vizualize[0], args.vizualize[1], args.vizualize[2]) if args.vizualize else None
 
-    analyzer = Analyzer(filename) if args.csd else None
+    analyzer = Csdwriter(filename) if args.csd else None
 
     tsh = args.treshold if args.treshold else 0.02
     verbose = args.verbose if args.verbose else False
