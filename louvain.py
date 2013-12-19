@@ -19,18 +19,19 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
 
         if not (q > old_q):
             print 'It took %s seconds' % (time.time() - t)
-            # print "pass: %d. # of comms: %d. Q = %f" % (i,len(coms),q)
+            if not verbose:
+                print "pass: %d. # of comms: %d. Q = %f" % (i,len(coms),q)
             if filewriter:
                 filewriter.close()
                 'Community structure outputted to .mat-file'
-            # if cytowriter:
-            #     # cytowriter.close()
-            #     'Community structure outputted to file'
             if analyzer:
                 analyzer.show()
                 print 'CSD dumped to file'
             return
         A = second_phase(A, coms, n)
+        n = A.shape[1]
+        k = [float(A.data[A.indptr[j]:A.indptr[j+1]].sum()) for j in xrange(n)]
+
         if dump:
             C.dump(i)
         if cytowriter:
@@ -40,11 +41,7 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
 
         if verbose:
             print 'pass: %d. # of comms: %d. Q = %f' % (i,len(coms),q)
-        if i == 3:
-            G = nx.from_scipy_sparse_matrix(A)
-            nx.write_weighted_edgelist(G, 'exports/hack.txt')
-        n = A.shape[1]
-        k = [float(A.data[A.indptr[j]:A.indptr[j+1]].sum()) for j in xrange(n)]
+
         old_q = q
         i += 1   
 
@@ -70,6 +67,7 @@ def first_phase(A, m, n, k, C, init_q, tsh, verbose):
     return C, new_q
 
 def second_phase(A, coms, n):
+    # This is slow in Python. Consider making it directly with a coo-sparse.
     B = make_C_matrix(A, coms, n)
     new = B.dot(A.dot(B.T))
     return new

@@ -8,8 +8,7 @@ def diagonal_modularity(diag, k, m):
     
 def modularity(A, k, m, C):
     """ 
-    Only use for verification purposes. This is horribly slow, and calc_modularity 
-    returns the correct modularity gain.
+    Calculates the global modularity by summing over each community. It is very slow.
     """
     q = 0.0
     for name, c in C.get_communities().iteritems():
@@ -18,6 +17,10 @@ def modularity(A, k, m, C):
     return q
 
 def calc_modularity(data, indices, m, k, C, i):
+    """"
+    Calculates the modularity gain of moving vertex i into the community of its
+    neighbors
+    """
     getcom = C.get_community
     getcomstrength = C.get_community_strength
 

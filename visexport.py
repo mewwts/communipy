@@ -4,11 +4,10 @@ import os
 
 class Viswriter:
 
-    def __init__(self, filename, tsh, passnr, compass):
+    def __init__(self, filename, passnr, compass):
         self._pass = passnr
         self._compass = compass
         self._i = 1
-        self._tsh = tsh
         writename = os.path.basename(filename)
         self._name = "".join(["exports/", writename])
         self._array = None
@@ -30,9 +29,7 @@ class Viswriter:
 
         if self._i == self._pass:
             self._sizes = {k:len(v) for k,v in self._communities.iteritems()}
-            self._communities = {k:np.array([k]) for k in self._sizes.keys()}
-        if self._i == self._pass + 1:
-            
+            self._communities = {k:np.array([k]) for k in self._sizes.keys()}            
             self._export_edgelist(A)
 
         if self._i == self._compass:

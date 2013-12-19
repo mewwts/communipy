@@ -3,10 +3,11 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.colors import LogNorm, SymLogNorm
 import seaborn as sns
 
 
-# based on : http://redmine.epfl.ch/projects/python_cookbook/wiki/Matrix_sparsity_patterns#Source-code-binningpy
+
 
 def blocks(A, nblocks):
     n = A.shape[0]
@@ -33,13 +34,16 @@ def plot_block_sparsity_structure(A, nblocks):
     plt.figure()
     
     ax=plt.subplot(111)
-    my_cmap = matplotlib.colors.LinearSegmentedColormap.from_list('my_cmap', sns.color_palette("YlOrRd_r", 8)[::-1])
-    im=plt.imshow(bins, cmap=my_cmap, interpolation='none', vmin=0.0)
+    colormap = matplotlib.colors.LinearSegmentedColormap.from_list('colormap', sns.color_palette("YlOrRd_r", 8)[::-1])
+    image=plt.imshow(bins, cmap=colormap, interpolation='none', vmin=0.0,norm = SymLogNorm(linthresh=0.001))
+    
+    
     ax.grid(False, which="major")
     ax.grid(False, which="minor")
     
     divider = make_axes_locatable(ax)
-    cax = divider.append_axes("right", size="5%", pad=.5)
-    plt.colorbar(im, cax=cax)
+    color_ax = divider.append_axes("right", size="5%", pad=.5)
+    plt.colorbar(image, cax=color_ax)
     
-    plt.savefig('results/sparsity.png', dpi=2000, bbox_inches='tight')  
+    # plt.savefig('results/sparsity.png', dpi=2000, bbox_inches='tight')  
+    plt.show()
