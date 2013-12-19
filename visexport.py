@@ -4,7 +4,7 @@ import os
 
 class Viswriter:
 
-    def __init__(self, filename, passnr, compass):
+    def __init__(self, filename, passnr, compass, A):
         self._pass = passnr
         self._compass = compass
         self._i = 1
@@ -13,7 +13,6 @@ class Viswriter:
         self._array = None
         self._sizes = {}
         self._communities = {}
-        
 
     def add_pass(self, comdict, A):
         
@@ -43,11 +42,12 @@ class Viswriter:
         # a = np.unique(a.view(np.dtype((np.void, a.dtype.itemsize*a.shape[1])))).view(a.dtype).reshape(-1, a.shape[1])
         
         # output the node sizes
-        ivals = np.fromiter((k for k in self._sizes.keys()), dtype=int)
-        jvals = np.fromiter((self._sizes[r] for r in self._sizes.keys()),dtype=int)
+        if self._sizes:
+            ivals = np.fromiter((k for k in self._sizes.keys()), dtype=int)
+            jvals = np.fromiter((self._sizes[r] for r in self._sizes.keys()),dtype=int)
 
-        a = np.column_stack((ivals, jvals))
-        np.savetxt("".join([self._name, 'nodesize' '.csv']), a, delimiter=",", fmt='%i')
+            a = np.column_stack((ivals, jvals))
+            np.savetxt("".join([self._name, 'nodesize' '.csv']), a, delimiter=",", fmt='%i')
         
         # Output the community sizes (for top down visualization)
         if self._pass == self._compass:

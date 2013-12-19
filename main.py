@@ -35,7 +35,7 @@ def initialize(filepath, args):
     m = 0.5*A.sum()
     
     filewriter = Matwriter(filename) if args.output else None
-    cytowriter = Viswriter(filename, args.vizualize[0], args.vizualize[1], args.vizualize[2]) if args.vizualize else None
+    cytowriter = Viswriter(filename, args.vizualize[0], args.vizualize[1], A) if args.vizualize else None
 
     analyzer = Csdwriter(filename) if args.csd else None
 
