@@ -5,7 +5,6 @@ from math import ceil, log, floor
 import numpy as np
 import cPickle as pickle
 
-
 class Csdwriter:
     def __init__(self, filename):
         self.passes = []
@@ -24,4 +23,4 @@ class Csdwriter:
         self.i +=1
 
     def show(self):
-        pickle.dump(self.passes, open("".join(['MAT_MIN_LCC_coms','.p']), "wb" ))
+        pickle.dump(self.passes, open("".join([self.name, 'comsizes','.p']), "wb" ))

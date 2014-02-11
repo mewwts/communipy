@@ -11,9 +11,9 @@ def modularity(A, k, m, C):
     Calculates the global modularity by summing over each community. It is very slow.
     """
     q = 0.0
-    for name, c in C.get_communities().iteritems():
+    for com, c in C.get_communities().iteritems():
         rowslice = A[c,:]
-        q += (1.0/(2*m))*np.sum(rowslice.data[np.in1d(rowslice.indices, c)]) - (C.get_community_strength(name)/(2*m))**2
+        q += (1.0/(2*m))*np.sum(rowslice.data[np.in1d(rowslice.indices, c)]) - (C.get_community_strength(com)/(2*m))**2
     return q
 
 def calc_modularity(data, indices, m, k, C, i):
@@ -23,12 +23,10 @@ def calc_modularity(data, indices, m, k, C, i):
     """
     getcom = C.get_community
     getcomstrength = C.get_community_strength
-
     movein = {}
     k_i = k[i]
     c_i = getcom(i)
     const = k_i/(2.0*m**2)
-    
     moveout = (2.0/(4.0*m**2))*k_i*(getcomstrength(c_i) - k_i)
    
     for ind,j in enumerate(indices): 
@@ -46,5 +44,36 @@ def calc_modularity(data, indices, m, k, C, i):
     
     if not movein:
         return -1, -1.0
+
+    return max(((i[0], i[1]+moveout) for i in movein.iteritems()), key=itemgetter(1))
+
+def noloops_calc_modularity(data, indices, m, k, C, i):
+    """
+    Calculates the modularity not allowing loops in the null model
+    """
+    getcom = C.get_community
+    getcomstrength = C.get_community_strength
+    movein = {}
+    k_i = k[i]
+    c_i = getcom(i)
+
+    moveout = k_i*(getcomstrength(c_i) - k_i)/(m*(2*m - getcomstrength(c_i)))
+
+    for ind, j in enumerate(indices):
+        c_j = getcom(j)
+
+        if c_j == c_i:
+            if i != j:
+                moveout -= data[ind]/m
+
+        if c_j in movein:
+            movein[c_j] += data[ind]/m
+        else:
+            k_c = getcomstrength(c_j)
+            movein[c_j] = data[ind]/m - \
+                ((k_i*k_c) * (k_c/(2*m-k_c) + k_i/(2*m-k_i) + 2))/(2*m*(2*m-k_c-k_i))
+
+    if not movein:
+        return -1, -1.0
     
-    return max(((i[0], i[1] + moveout) for i in movein.iteritems()), key=itemgetter(1))
+    return max(((i[0], i[1]+moveout) for i in movein.iteritems()), key=itemgetter(1))

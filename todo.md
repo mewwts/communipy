@@ -9,6 +9,7 @@ Improvements:
 - [x] Get number of communities and print
 - [x] m*(m-1) vs m**2
 - [x] CSD histograms
+- [ ] "random" order by selecting i < n and generate the group mod n
 
 Issues:
 - [x] Absolute gain in modularity in louvain.py

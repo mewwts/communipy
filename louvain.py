@@ -6,27 +6,26 @@ import time
 import networkx as nx
 
 def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
-
     i = 1
     old_q = mod.diagonal_modularity(A.diagonal(), k, m) 
     t = time.time()
     while True:
         C = Communities(xrange(n), k)
-        (C,q) = first_phase(A, m, n, k, C, old_q, tsh, verbose)
+        (C,q) = first_phase(A, m, n, k, C, old_q, tsh, verbose, i)
         if filewriter:
             filewriter.write_nodelist(C.get_communities_renamed(), n, i)
         coms = C.get_communities_renamed()
-
         if not (q > old_q):
             print 'It took %s seconds' % (time.time() - t)
             if not verbose:
-                print "pass: %d. # of comms: %d. Q = %f" % (i,len(coms),q)
+                print "pass: %d. # of comms: %d. Q = %f" % (i-1,len(coms),q)
             if filewriter:
                 filewriter.close()
                 'Community structure outputted to .mat-file'
             if analyzer:
                 analyzer.show()
                 print 'CSD dumped to file'
+
             return
         A = second_phase(A, coms, n)
         n = A.shape[1]
@@ -40,14 +39,14 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
             analyzer.add_pass(coms)
 
         if verbose:
-            print 'pass: %d. # of comms: %d. Q = %f' % (i,len(coms),q)
+            print 'pass: %d. # of comms: %d. Q = %f' % (i, len(coms), q)
 
         old_q = q
         i += 1   
 
-def first_phase(A, m, n, k, C, init_q, tsh, verbose):
-    
+def first_phase(A, m, n, k, C, init_q, tsh, verbose, passnr):
     calc_modularity = mod.calc_modularity
+    # noloops = mod.noloops_calc_modularity
     move = C.move
     new_q = init_q 
     
@@ -67,7 +66,6 @@ def first_phase(A, m, n, k, C, init_q, tsh, verbose):
     return C, new_q
 
 def second_phase(A, coms, n):
-    # This is slow in Python. Consider making it directly with a coo-sparse.
     B = make_C_matrix(A, coms, n)
     new = B.dot(A.dot(B.T))
     return new

@@ -1,5 +1,6 @@
 import numpy as np 
-import louvain as louvain 
+import louvain
+import labelprop
 from matexport import Matwriter
 from visexport import Viswriter
 from csdexport import Csdwriter
@@ -10,7 +11,6 @@ import os
 
 
 def initialize(filepath, args):
-    
     filename, ending = os.path.splitext(filepath)
     if ending == '.mat':
         from scipy import io
@@ -24,7 +24,6 @@ def initialize(filepath, args):
         filename = os.path.splitext(filename)[0]
         import networkx as nx
         A = nx.to_scipy_sparse_matrix(nx.read_weighted_edgelist(filepath, delimiter =' '))  
-        # A = nx.to_scipy_sparse_matrix(nx.read_adjlist(filepath))  
     else:
         print "this file extension is not recognized."
         return
@@ -45,8 +44,10 @@ def initialize(filepath, args):
 
     if verbose:
         print 'File loaded. %d nodes in the network and total weight is %.2f ' % (n, m)
-    
-    louvain.louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump)
+    if args.prop:
+        labelprop.labelprop(A, m, n, k)
+    else:
+        louvain.louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -60,6 +61,7 @@ if __name__ == '__main__':
         arg[0] which pass that should be the vertices \
         arg[1] the pass that indicates the community structure. \
         You need to know a priori how many passes there is.", type=int)
+    parser.add_argument("-p", "--prop", help="Use labelpropagation algorithm", action="store_true")
     args = parser.parse_args()
 
     if os.path.isfile(args.path_to_file):

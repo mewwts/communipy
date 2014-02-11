@@ -15,7 +15,6 @@ class Viswriter:
         self._communities = {}
 
     def add_pass(self, comdict, A):
-        
         if self._i == 1:
             for key, value in comdict.iteritems():
                 if len(value) > 0:
@@ -38,9 +37,6 @@ class Viswriter:
         self._i += 1       
 
     def close(self):
-        
-        # a = np.unique(a.view(np.dtype((np.void, a.dtype.itemsize*a.shape[1])))).view(a.dtype).reshape(-1, a.shape[1])
-        
         # output the node sizes
         if self._sizes:
             ivals = np.fromiter((k for k in self._sizes.keys()), dtype=int)
