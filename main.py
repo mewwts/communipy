@@ -4,6 +4,7 @@ import labelprop
 from matexport import Matwriter
 from visexport import Viswriter
 from csdexport import Csdwriter
+import power
 import argparse
 from scipy import sparse
 import os
@@ -27,7 +28,10 @@ def initialize(filepath, args):
     else:
         print "this file extension is not recognized."
         return
-    
+   
+    if args.power:
+        power.power(A, args.power[0], args.power[1])
+        return 
     
     n = A.shape[1]
     k = [float(A.data[A.indptr[j]:A.indptr[j+1]].sum()) for j in xrange(n)]
@@ -62,6 +66,7 @@ if __name__ == '__main__':
         arg[1] the pass that indicates the community structure. \
         You need to know a priori how many passes there is.", type=int)
     parser.add_argument("-p", "--prop", help="Use labelpropagation algorithm", action="store_true")
+    parser.add_argument("-pow", "--power", nargs='+', help="Take the pseudopower of the matrix and save it to disk")
     args = parser.parse_args()
 
     if os.path.isfile(args.path_to_file):

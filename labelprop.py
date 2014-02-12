@@ -18,7 +18,7 @@ def propagate(A, m, n, k, C):
     get_com = C.get_community
     b = [-1] * n
     f = [1.0/n] * n
-    num_moves = 1000
+    num_moves = 100
 
     while num_moves > 0:
         num_moves = 0
@@ -50,6 +50,6 @@ def propagate(A, m, n, k, C):
                     f[i] = neighbor_coms[best_match] * b[best_match]
 
 def sigmoid(t):
-    etta = 2.0
+    etta = 0.0
     lamb = 0.5
     return 1.0 / (1 + exp(-etta*(t-lamb)))
