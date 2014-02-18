@@ -10,6 +10,7 @@ Improvements:
 - [x] m*(m-1) vs m**2
 - [x] CSD histograms
 - [ ] "random" order by selecting i < n and generate the group mod n
+- [ ] Generate random graphs for benchmarking
 
 Issues:
 - [x] Absolute gain in modularity in louvain.py

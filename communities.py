@@ -12,19 +12,19 @@ class Communities(object):
             del self._communities[s_i]
             del self._strength[s_i]
         try:
-            self._strength[s_i] -= k_i    
+            self._strength[s_i] -= k_i
         except KeyError:
             pass
         self._strength[s] += k_i
         self._nodes[i] = s
         self._communities[s].add(i)
-        
+
     def get_community_strength(self, x):
         return self._strength[x]
 
     def get_community(self, x):
         return self._nodes[x]
- 
+
     def get_neighbors(self, x):
         return list(self._communities[self.get_community(x)])
 
@@ -39,7 +39,7 @@ class Communities(object):
             return []
 
     def get_nodes(self, s):
-        try: 
+        try:
             return list(self._communities[s])
         except KeyError:
             return []
@@ -48,17 +48,19 @@ class Communities(object):
         return self._nodes
 
     def get_communities(self):
-        return {key: list(value) for key, value in self._communities.iteritems()}
+        return {key: list(value) for key, value in \
+            self._communities.iteritems()}
         
     def get_communities_renamed(self):
         # sort keys
         keys = sorted(self._communities.keys())
         # rename communities and return
-        return {i:list(self._communities[x]) for i,x in enumerate(keys)}
-    
+        return {i:list(self._communities[x]) for i, x in enumerate(keys)}
+
     def get_number_of_communities(self):
         return len(self._communities.keys())
 
     def dump(self, i):
         import cPickle as pickle
-        pickle.dump(self, open("".join(['pickled_', 'coms', str(i), '.p']), "wb" ))
+        pickle.dump(self, open("".join(['pickled_', \
+            'coms', str(i), '.p']), "wb"))
