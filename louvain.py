@@ -2,12 +2,11 @@ from communities import Communities
 import modularity as mod
 import numpy as np
 from scipy import sparse
-import time 
-import networkx as nx
+import time
 
 def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
     i = 1
-    old_q = mod.diagonal_modularity(A.diagonal(), k, m) 
+    old_q = mod.diagonal_modularity(A.diagonal(), k, m)
     t = time.time()
     while True:
         C = Communities(xrange(n), k)
@@ -18,7 +17,7 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
         if not (q > old_q):
             print 'It took %s seconds' % (time.time() - t)
             if not verbose:
-                print "pass: %d. # of comms: %d. Q = %f" % (i-1,len(coms),q)
+                print "pass: %d. # of communities: %d. Q = %f" % (i-1,len(coms),q)
             if filewriter:
                 filewriter.close()
                 'Community structure outputted to .mat-file'
@@ -39,7 +38,7 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
             analyzer.add_pass(coms)
 
         if verbose:
-            print 'pass: %d. # of comms: %d. Q = %f' % (i, len(coms), q)
+            print 'pass: %d. # of coms: %d. Q = %f' % (i, len(coms), q)
 
         old_q = q
         i += 1   
@@ -71,7 +70,7 @@ def second_phase(A, coms, n):
     return new
 
 def make_C_matrix(A, coms, n):
-    # must make sure that dict is sorted
+    # must make sure that dictionary is sorted
     keys = sorted(coms)
     ivec = np.array([k for k in keys for j in coms[k]])
     jvec = np.array([v for r in keys for v in coms[r]])
