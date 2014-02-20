@@ -55,7 +55,7 @@ def get_graph(filepath):
         raise IOError
     return A
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("path_to_file", help="Specify the path of the data set")
     parser.add_argument("-t", "--treshold", help="Specify an modularity treshold used in the first phase. Default is 0.002", type=float)
@@ -74,3 +74,6 @@ if __name__ == '__main__':
             initialize(args.path_to_file, args)
     else:
         print "Please provide a valid file"
+
+if __name__ == '__main__':
+    main()

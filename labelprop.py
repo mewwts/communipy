@@ -2,7 +2,7 @@ from operator import itemgetter
 from communities import Communities
 import modularity
 from math import exp
-import random
+# import random
 
 def labelprop(A, m, n, k):
     C = Communities(xrange(n), k)

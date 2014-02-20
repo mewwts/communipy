@@ -70,8 +70,9 @@ def noloops_calc_modularity(data, indices, m, k, C, i):
             movein[c_j] += data[ind]/m
         else:
             k_c = getcomstrength(c_j)
-            movein[c_j] = data[ind]/m - \
-                ((k_i*k_c) * (k_c/(2*m-k_c) + k_i/(2*m-k_i) + 2))/(2*m*(2*m-k_c-k_i))
+            movein[c_j] = (data[ind]/m - 
+                           ((k_i*k_c) * (k_c/(2*m-k_c) + 
+                           k_i/(2*m-k_i) + 2))/(2*m*(2*m-k_c-k_i)))
 
     if not movein:
         return -1, -1.0

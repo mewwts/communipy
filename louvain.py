@@ -8,12 +8,14 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
     i = 1
     old_q = mod.diagonal_modularity(A.diagonal(), k, m)
     t = time.time()
+    print A.todense()
     while True:
         C = Communities(xrange(n), k)
         (C,q) = first_phase(A, m, n, k, C, old_q, tsh, verbose, i)
         if filewriter:
             filewriter.write_nodelist(C.get_communities_renamed(), n, i)
         coms = C.get_communities_renamed()
+        print coms
         if not (q > old_q):
             print 'It took %s seconds' % (time.time() - t)
             if not verbose:
