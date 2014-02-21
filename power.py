@@ -22,7 +22,7 @@ def power(matrix, exp, path=None):
         io.savemat(path, {'mat': Ak}, do_compression=True, oned_as='row')
     return Ak
 
-if __name__ ==  '__main__':
+def power_main():
     parser = argparse.ArgumentParser()
     parser.add_argument("path_to_input", \
         help="Specify the path of the input data set")
@@ -45,3 +45,6 @@ if __name__ ==  '__main__':
     else:
         print "Specify a valid parameters"
 
+
+if __name__ ==  '__main__':
+    power_main()

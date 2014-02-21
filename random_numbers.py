@@ -1,19 +1,6 @@
 import random
 import time
 
-def yield_random(iterable):
-    """ Yield the numbers in the iterable in a random pseduorandom
-    fashion """
-
-    not_seen = set(iterable)
-    random.seed(time.time())
-
-    while not_seen:
-        choice = random.sample(not_seen, 1)[0]
-        not_seen.remove(choice)
-        yield choice
-
-
 def yield_random_list(iterable):
     """ Yield the numbers in the iterable in a random pseduorandom
     fashion """
