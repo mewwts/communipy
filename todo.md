@@ -12,7 +12,10 @@ Improvements:
 - [x] "random" order by selecting i < n and generate the group mod n
 - [ ] Generate Erdoz-Renyi random graphs for benchmarking
 - [ ] Generate Benchmark graphs.
-- [ ] "Test suite" for testing against random graphs. Output NMI etc.
+- [ ] "Test suite" for testing against random graphs. Output NMI, NVI etc.
+- [ ] Data structure in modularity.py, max-heap to avoid O(n) max search?
+- [ ] Fix median in functions.py
+
 Issues:
 - [x] Absolute gain in modularity in louvain.py
 - [x] map with lambda apparantly slower than list comprehension

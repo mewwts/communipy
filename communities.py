@@ -1,3 +1,5 @@
+import random
+
 class Communities(object):
 
     def __init__(self, iterable, k):
@@ -11,13 +13,21 @@ class Communities(object):
         if not self._communities[s_i]:
             del self._communities[s_i]
             del self._strength[s_i]
-        try:
+        try: # Why not else here
             self._strength[s_i] -= k_i
         except KeyError:
             pass
-        self._strength[s] += k_i
-        self._nodes[i] = s
-        self._communities[s].add(i)
+        if s == -1:
+            for j in xrange(2*len(self._communities), 0, -1):
+                if j not in self._communities:
+                    self._communities[j] = i
+                    self._strength[j] = k_i
+                    self._nodes[i] = j
+                    break
+        else:
+            self._strength[s] += k_i
+            self._nodes[i] = s
+            self._communities[s].add(i)
 
     def get_community_strength(self, x):
         return self._strength[x]
