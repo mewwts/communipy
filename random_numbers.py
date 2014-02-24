@@ -20,8 +20,8 @@ def yield_random_modulo(n):
         rand = int(rand * n) # number between 0 and n
         if bin_gcd(rand, n) == 1:
             break
-    i = 0
-    while i < n:
+    i = 1
+    while i <= n:
         yield i*rand % n
         i += 1
 
