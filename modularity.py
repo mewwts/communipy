@@ -28,7 +28,7 @@ def calc_modularity(data, indices, m, k, C, i):
     c_i = getcom(i)
     const = k_i/(2.0*m**2)
     moveout = (2.0/(4.0*m**2))*k_i*(getcomstrength(c_i) - k_i)
-   
+    max_movein = (-1, -1.0)
     for ind,j in enumerate(indices): 
         
         c_j = getcom(j)
@@ -41,11 +41,14 @@ def calc_modularity(data, indices, m, k, C, i):
             movein[c_j] += data[ind]/m
         else:
             movein[c_j] = data[ind]/m - const*getcomstrength(c_j)
-    
+
+        if movein[c_j] > max_movein[1]:
+            max_movein = (c_j, movein[c_j])
+
     if not movein:
         return -1, -1.0
 
-    return max(((i[0], i[1]+moveout) for i in movein.iteritems()), key=itemgetter(1))
+    return (max_movein[0], max_movein[1] + moveout)
 
 def noloops_calc_modularity(data, indices, m, k, C, i):
     """
