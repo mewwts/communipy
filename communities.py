@@ -1,11 +1,10 @@
-import random
-
 class Communities(object):
 
     def __init__(self, iterable, k):
-        self._nodes = list(iterable)
+        self._nodes = {}.fromkeys(iterable).keys()
         self._communities = {i:set([i]) for i in self._nodes}
         self._strength = {i:k[i] for i in xrange(len(k))}
+        self._largest = (-1, 0)
 
     def move(self, i, s, k_i):
         s_i = self.get_community(i)
@@ -18,9 +17,10 @@ class Communities(object):
         except KeyError:
             pass
         if s == -1:
+            # Isolate vertex i
             for j in xrange(2*len(self._communities), 0, -1):
                 if j not in self._communities:
-                    self._communities[j] = i
+                    self._communities[j] = {i}
                     self._strength[j] = k_i
                     self._nodes[i] = j
                     break
@@ -28,6 +28,18 @@ class Communities(object):
             self._strength[s] += k_i
             self._nodes[i] = s
             self._communities[s].add(i)
+            size = len(self._communities[s])
+            if size > self._largest[1]:
+                largest = (s, size)
+
+    def insert_community(self, nodes, k):
+        newkey = -1
+        for j in xrange(2*len(self._communities), 0, -1):
+            if j not in self._communities:
+                newkey = j
+                self._communities[j] = {}
+        for i, node in enumerate(nodes):
+            self.move(node, newkey, k[i])
 
     def get_community_strength(self, x):
         return self._strength[x]
@@ -68,6 +80,9 @@ class Communities(object):
 
     def get_number_of_communities(self):
         return len(self._communities.keys())
+
+    def get_largest_community(self):
+        return largest
 
     def dump(self, i):
         import cPickle as pickle
