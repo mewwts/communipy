@@ -4,20 +4,22 @@ import numpy as np
 from scipy import io, sparse
 import main
 
-def power(matrix, exp, path=None):
+def power(mtx, exp, path=None):
     # This is not very efficient.
-    indptr = matrix.indptr
-    indices = matrix.indices
-    nz = matrix.nonzero()
-    A = matrix.tolil()
-    A.setdiag([1 for i in xrange(A.shape[1])])
-    A = A.tocsr()
+    indptr = mtx.indptr
+    indices = mtx.indices
+    nz = mtx.nonzero()
+    # A = mtx.tolil()
+    I = np.eye(mtx.shape[1])
+    # A.setdiag([1 for i in xrange(A.shape[1])])
+    A = mtx + I
     for i in xrange(int(exp)-1):
         A = A.dot(A)
 
     data = np.array(A[nz[0], nz[1]], dtype=float)[0]
 
     Ak = sparse.csr_matrix((data, indices, indptr))
+
     if path:
         io.savemat(path, {'mat': Ak}, do_compression=True, oned_as='row')
     return Ak
