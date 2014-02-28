@@ -31,22 +31,18 @@ def bin_gcd(a, b):
     gcd algorithm.
 
     """
-    if a == b:
+    if a == b or b == 0:
         return a
     if a == 0:
         return b
-    if b == 0:
-        return a
 
     if not a & 1:
         if not b & 1:
             return bin_gcd(a >> 1, b >> 1) << 1
         else: # b is odd
             return bin_gcd(a >> 1, b)
-
     if not b & 1:
         return bin_gcd(a, b >> 1)
-
     if a > b:
         return bin_gcd((a - b) >> 1, b)
 
