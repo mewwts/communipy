@@ -10,7 +10,7 @@ def power(mtx, exp, path=None):
     indices = mtx.indices
     nz = mtx.nonzero()
     # A = mtx.tolil()
-    I = np.eye(mtx.shape[1])
+    I = sparse.identity(mtx.shape[1], dtype=float, format='csr')
     # A.setdiag([1 for i in xrange(A.shape[1])])
     A = mtx + I
     for i in xrange(int(exp)-1):
