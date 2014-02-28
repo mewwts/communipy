@@ -4,7 +4,7 @@ class Communities(object):
         self._nodes = {}.fromkeys(iterable).keys()
         self._communities = {i:set([i]) for i in self._nodes}
         self._strength = {i:k[i] for i in xrange(len(k))}
-        self._largest = (-1, 0)
+        self._largest = (0, 1)
 
     def move(self, i, s, k_i):
         s_i = self.get_community(i)
@@ -30,7 +30,7 @@ class Communities(object):
             self._communities[s].add(i)
             size = len(self._communities[s])
             if size > self._largest[1]:
-                largest = (s, size)
+                self._largest = (s, size)
 
     def insert_community(self, nodes, k):
         newkey = -1
@@ -40,6 +40,11 @@ class Communities(object):
                 self._communities[j] = {}
         for i, node in enumerate(nodes):
             self.move(node, newkey, k[i])
+
+    def delete_community(self, c, k):
+        nodes = self._communities[c].copy()
+        for node in nodes:
+            self.move(node, -1, k[node])
 
     def get_community_strength(self, x):
         return self._strength[x]
@@ -82,7 +87,7 @@ class Communities(object):
         return len(self._communities.keys())
 
     def get_largest_community(self):
-        return largest
+        return self._largest
 
     def dump(self, i):
         import cPickle as pickle
