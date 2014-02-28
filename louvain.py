@@ -15,7 +15,6 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
         if filewriter:
             filewriter.write_nodelist(C.get_communities_renamed(), n, i)
         coms = C.get_communities_renamed()
-        print coms
         if not (q > old_q):
             print 'It took %s seconds' % (time.time() - t)
             if not verbose:
@@ -28,7 +27,7 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
                 print 'CSD dumped to file'
 
             return
-        A = second_phase(A, coms, n)
+        A = second_phase(A, coms)
         n = A.shape[1]
         k = [float(A.data[A.indptr[j]:A.indptr[j+1]].sum()) for j in xrange(n)]
 
@@ -66,12 +65,12 @@ def first_phase(A, m, n, k, C, init_q, tsh, verbose, passnr):
             break
     return new_q
 
-def second_phase(A, coms, n):
-    B = make_C_matrix(A, coms, n)
+def second_phase(A, coms):
+    B = make_C_matrix(coms, A.shape[1])
     new = B.dot(A.dot(B.T))
     return new
 
-def make_C_matrix(A, coms, n):
+def make_C_matrix(coms, n):
     # must make sure that dictionary is sorted
     keys = sorted(coms)
     ivec = np.array([k for k in keys for j in coms[k]])
