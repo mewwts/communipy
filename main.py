@@ -4,6 +4,9 @@ import labelprop
 from matexport import Matwriter
 from visexport import Viswriter
 from csdexport import Csdwriter
+import modularity
+# from communities import Communities
+from labels import Labels
 import argparse
 from scipy import sparse
 import os
@@ -33,7 +36,11 @@ def initialize(filepath, args):
     if verbose:
         print 'File loaded. %d nodes in the network and total weight is %.2f ' % (n, m)
     if args.prop:
-        labelprop.labelprop(A, m, n, k)
+        C = Labels(xrange(n), k)
+        #labelprop.dalpa(A, m, n, k, C, False)
+        labelprop.bdpa(A, m, n, k, C)
+        print C.get_communities()
+        print modularity.modularity(A, k, m, C)
     else:
         louvain.louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump)
 

@@ -29,7 +29,7 @@ def erdos_renyi(n1, n2, p1, p2):
     ncomp, labels = sparse.csgraph.connected_components(A, directed=False)
 
     if ncomp > 1:
-        print "Graph was initially not connected. Returning the largest \
+        print "Random graph was initially not connected. Returning the largest \
                connected component"
         max_label = max(((count, i) for i, count in
                         enumerate(np.bincount(labels))))[1]

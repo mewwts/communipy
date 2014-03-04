@@ -13,7 +13,7 @@ Improvements:
 - [ ] Generate Erdoz-Renyi random graphs for benchmarking
 - [ ] Generate Benchmark graphs.
 - [ ] "Test suite" for testing against random graphs. Output NMI, NVI etc.
-- [ ] Data structure in modularity.py, max-heap to avoid O(n) max search?
+- [ ] Data structure in modularity.py, max/min-heap to avoid O(n) max search?
 - [ ] Fix median in functions.py
 
 Issues:
