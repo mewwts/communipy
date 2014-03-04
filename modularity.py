@@ -4,22 +4,28 @@ from operator import itemgetter
 
 def diagonal_modularity(diag, k, m):
     """Calculates the modularity when all vertices are in their own community"""
-    return (1.0/(2*m))*nr.evaluate("sum(diag)") -(1/(4*m**2))*sum(i**2 for i in k)
+    ks = np.array(k)
+    return (1.0/(2*m))*nr.evaluate("sum(diag)") -(1/(4*m**2))*nr.evaluate("sum(ks**2)")
     
 def modularity(A, k, m, C):
     """ 
-    Calculates the global modularity by summing over each community. It is very slow.
+    Calculates the global modularity by summing over each community. 
+    It is very slow, use louvain.second_phase and diagonal_modularity
+    instead
+
     """
     q = 0.0
     for com, c in C.get_communities().iteritems():
         rowslice = A[c,:]
-        q += (1.0/(2*m))*np.sum(rowslice.data[np.in1d(rowslice.indices, c)]) - (C.get_community_strength(com)/(2*m))**2
+        q += (1.0/(2*m))*np.sum(rowslice.data[np.in1d(rowslice.indices, c)]) -\
+             (C.get_community_strength(com)/(2*m))**2
     return q
 
 def calc_modularity(data, indices, m, k, C, i):
     """"
-    Calculates the modularity gain of moving vertex i into the community of its
-    neighbors
+    Calculates the modularity gain of moving vertex i into the 
+    community of its neighbors
+
     """
     getcom = C.get_community
     getcomstrength = C.get_community_strength
