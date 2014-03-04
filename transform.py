@@ -32,6 +32,12 @@ def walk_generator(A, path=None):
         io.savemat(path, {'mat': inv_mat}, do_compression=True, oned_as='row')
     return inv_mat
 
+def exponentiate(A, path=None):
+    exp_mat = linalg.expm(A)
+    if path:
+        io.savemat(path, {'mat': exp_mat}, do_compression=True, oned_as='row')
+    return exp_mat
+
 def power_main():
     parser = argparse.ArgumentParser()
     parser.add_argument("path_to_input", \
@@ -39,6 +45,8 @@ def power_main():
     parser.add_argument("-p", "--power", type=int,
                         help="Specify to which power to raise the matrix to")
     parser.add_argument("-w", "--walk", help="Calculate (I-A)^-1",
+                        action="store_true")
+    parser.add_argument("-e", "--exp", help="Calculate exp(A)",
                         action="store_true")
     parser.add_argument("path_to_output", \
         help="Specify where to save output")
@@ -56,6 +64,8 @@ def power_main():
                 power(A, args.power, out_path) 
             elif args.walk:
                 walk_generator(A, out_path)
+            elif args.exp:
+                exponentiate(A, out_path)
             else:
                 print("No valid arguments, see -h")
     else:
