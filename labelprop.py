@@ -74,11 +74,15 @@ def dalpa(A, m, n, k, C, offensive=False):
     delta = 0.0
     num_iter = 1
     num_moves = 1
-
+    num_checked = 0
     # while not convergence
     while num_moves > 0:
         num_moves = 0
+        num_checked = 0
         for i in fns.yield_random_modulo(n):
+            num_checked += 1
+            print num_checked
+
             c_i = get_com(i)
             indices = A.indices[A.indptr[i]:A.indptr[i+1]]
             data = A.data[A.indptr[i]:A.indptr[i+1]]
@@ -131,15 +135,12 @@ def dalpa(A, m, n, k, C, offensive=False):
 def bdpa(A, m, n, k, C):
     dalpa(A, m, n, k, C, False)
     coms = C.get_communities_renamed()
-    #print C.get_communities()
     for c in coms:
         p_list = [C.get_p(j) for j in coms[c]]
-        print [(j,C.get_d(j)) for j in coms[c]]
         ms = np.median(p_list)
         # m[c] = fns.kth_largest(p_list, (len(p_list)/2) + 1)
         for i in coms[c]:
             if C.get_p(i) <= ms:
-                print('rewiring {}'.format(i))
                 C.move(i, -1, k[i])
                 C.set_d(i, 0)
                 C.set_p(i, 0)
