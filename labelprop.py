@@ -91,8 +91,8 @@ def dalpa(A, m, n, k, C, offensive=False):
             for ind, j in enumerate(indices):
                 c_j = get_com(j)
 
-                # if i == j:
-                #     continue
+                if i == j:
+                    continue
 
                 d = get_d(j)
                 if d < d_dict[c_j]:
@@ -113,7 +113,7 @@ def dalpa(A, m, n, k, C, offensive=False):
             if best_match != c_i and best_val > neighbor_coms[c_i]:
 
                 C.move(i, best_match, k[i], com_edges[best_match])
-                C.set_d(i, d_dict[best_match])
+                C.set_d(i, d_dict[best_match] + 1)
 
                 if offensive and num_iter > 1:
                     C.set_p(i, sum((get_p(j)/k[j] for j in
@@ -131,12 +131,15 @@ def dalpa(A, m, n, k, C, offensive=False):
 def bdpa(A, m, n, k, C):
     dalpa(A, m, n, k, C, False)
     coms = C.get_communities_renamed()
+    #print C.get_communities()
     for c in coms:
         p_list = [C.get_p(j) for j in coms[c]]
+        print [(j,C.get_d(j)) for j in coms[c]]
         ms = np.median(p_list)
         # m[c] = fns.kth_largest(p_list, (len(p_list)/2) + 1)
         for i in coms[c]:
             if C.get_p(i) <= ms:
+                print('rewiring {}'.format(i))
                 C.move(i, -1, k[i])
                 C.set_d(i, 0)
                 C.set_p(i, 0)
