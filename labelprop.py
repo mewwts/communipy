@@ -5,7 +5,8 @@ import functions as fns
 import numpy as np
 import sys
 from collections import defaultdict
-import numpy as np
+import numexpr
+
 
 def dpa(A, m, n, k):
     
@@ -91,9 +92,11 @@ def dalpa(A, m, n, k, C, offensive=False):
             max_neighbor = (-1, -1.0)
             com_edges = defaultdict(int)
             d_dict = defaultdict(lambda: sys.maxint)
+            p_dict = defaultdict(int)
 
             for ind, j in enumerate(indices):
                 c_j = get_com(j)
+                p_j = get_p(j)
 
                 if i == j:
                     continue
@@ -103,9 +106,11 @@ def dalpa(A, m, n, k, C, offensive=False):
                     d_dict[c_j] = d
 
                 if not offensive:
-                    neighbor_coms[c_j] += get_p(j)*(1 - delta*d)*data[ind]
+                    neighbor_coms[c_j] += p_j*(1 - delta*d)*data[ind]
+                    p_dict[c_j] += p_j/get_internal(j) 
                 else:
-                    neighbor_coms[c_j] += (1 - get_p(j))*(1 - delta*d)*data[ind]
+                    neighbor_coms[c_j] += (1 - p_j)*(1 - delta*d)*data[ind]
+                    p_dict[c_j] += p_j/k[j]
 
                 if neighbor_coms[c_j] > max_neighbor[1]:
                     max_neighbor = (c_j, neighbor_coms[c_j])
@@ -119,12 +124,11 @@ def dalpa(A, m, n, k, C, offensive=False):
                 C.move(i, best_match, k[i], com_edges[best_match])
                 C.set_d(i, d_dict[best_match] + 1)
 
-                if offensive and num_iter > 1:
-                    C.set_p(i, sum((get_p(j)/k[j] for j in
-                            C.get_nodes(best_match) if j in set(indices))))
+                if offensive and num_iter > 1:                
+                    C.set_p(i, p_dict[best_match])
                 else:
-                    C.set_p(i, sum(get_p(j)/get_internal(j) for j in
-                            C.get_nodes(best_match) if j in set(indices)))
+                    C.set_p(i, p_dict[best_match])
+
                 num_moves += 1
 
         num_iter += 1
