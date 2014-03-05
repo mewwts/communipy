@@ -22,7 +22,7 @@ def initialize(filepath, args):
         return
     
     n = A.shape[1]
-    k = np.array(A.sum(axis=1)).reshape(-1,).tolist() 
+    k = np.array(A.sum(axis=1), dtype=float).reshape(-1,).tolist() 
     m = 0.5*A.sum()
     
     filewriter = Matwriter(filename) if args.output else None
@@ -36,13 +36,13 @@ def initialize(filepath, args):
     if verbose:
         print 'File loaded. %d nodes in the network and total weight is %.2f ' % (n, m)
     if args.prop:
-        C = Labels(xrange(n), k)
-        #labelprop.dalpa(A, m, n, k, C, False)
-        labelprop.bdpa(A, m, n, k, C)
+        # C = Labels(xrange(n), k)
+        # labelprop.dalpa(A, m, n, k, C, False)
+        C = labelprop.dpa(A, m, n, k)
         coms = C.dict_renamed
         new_mat = louvain.second_phase(A, coms)
         new_k = [float(new_mat.data[new_mat.indptr[j]:new_mat.indptr[j+1]].sum()) for j in xrange(new_mat.shape[1])]
-        print coms
+        print len(coms)
         print modularity.diagonal_modularity(new_mat.diagonal(), new_k, 0.5*new_mat.sum())
     else:
         louvain.louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump)

@@ -14,35 +14,48 @@ def dpa(A, m, n, k):
     C = Labels(xrange(n), k)
     dalpa(A, m, n, k, C, False)
     print "we are in dpa, numcoms: ", len(C.dict_renamed)
-    
 
     # Construct community network, and run offensive dalpa
     B = second_phase(A, C.dict_renamed)
-    bn = B.shape[1]
-    bk = k = np.array(B.sum(axis=1)).reshape(-1,).tolist()
+    mpng = {i: c for i, c in enumerate(C.dict)} 
+    bk = np.array(B.sum(axis=1), dtype=float).reshape(-1,).tolist()
+    BC = Labels(xrange(B.shape[1]), bk)
+    dalpa(B, m, B.shape[1], bk, BC, True)
 
-    BC = Labels(xrange(bn), bk)
-    dalpa(B, m, bn, bk, BC, True)
-    
-    print "processed community network, numcoms ", len(BC.dict_renamed)
-    newcoms = None
+    D = None
 
-    if len(BC.get_communities()) == 1:
-         print 'continuing with modified bdpa'
-         bdpa_modified(A, m, n, k, C)
+    if len(BC) == 1:
+         print('continuing with modified bdpa')
+         # C = Labels(xrange(n), k)
+         bdpa(A, m, n, k, C)
+         # bdpa_modified(A, m, n, k, C)
     else:
+        print("We are recursing")
         # extract the largest community in terms of nodes from PASS 0
-        return
+        largest_subset = []
+        largest_size = -1
+        for c, nodes in BC:
+            size = 0
+            for node in nodes:
+                size += C.size(mpng[node])
+            if size > largest_size:
+                largest_subset = [mpng[node] for node in nodes]
+                largest_size = size
+        nodes = []
+        for coms in largest_subset:
+            nodes.extend(C[coms])
+        nodes = sorted(nodes)
+        node_mpng = {i:j for i, j in enumerate(nodes)}
+        A_slice = A[nodes, :][:, nodes]
+        D = dpa(A_slice, A_slice.sum()*0.5, A_slice.shape[1],
+                np.array(A_slice.sum(axis=1), dtype=float).reshape(-1,).tolist())
 
-    
-    if newcoms is not None:
-        for com, nodes in newcoms.iteritems():
-            orgnodes = Anodes[nodes]
-            C.insert_community(orgnodes, k[orgnodes])
-    
-    communities = C.dict_renamed
-    
-    return communities, modularity.modularity(A, k, m, C)
+    if D is not None:
+        for com, nodes in D:
+            C.insert_community([node_mpng[node] for node in nodes],
+                               [k[node_mpng[node]] for node in nodes])
+
+    return C
 
 def dalpa(A, m, n, k, C, offensive=False):
     """s
@@ -96,7 +109,7 @@ def dalpa(A, m, n, k, C, offensive=False):
             # Move to the best community
             best_match, best_val = max_neighbor
             if best_match == -1:
-                print("Best match == -1... Hmmm")
+                print("Best match = -1... Hmmm")
                 continue
             if best_match != c_i and best_val > neighbor_coms[c_i]:
 
