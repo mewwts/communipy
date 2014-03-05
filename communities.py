@@ -9,13 +9,16 @@ class Communities(object):
     def move(self, i, s, k_i):
         s_i = self.get_community(i)
         self._communities[s_i].remove(i)
+
         if not self._communities[s_i]:
             del self._communities[s_i]
             del self._strength[s_i]
+
         try: # Why not else here
             self._strength[s_i] -= k_i
         except KeyError:
             pass
+
         if s == -1:
             # Isolate vertex i
             for j in xrange(2*len(self._communities), 0, -1):
@@ -93,3 +96,7 @@ class Communities(object):
         import cPickle as pickle
         pickle.dump(self, open("".join(['pickled_', \
             'coms', str(i), '.p']), "wb"))
+
+    def __iter__(self):
+        for name, nodes in self._communities.iteritems():
+            yield (name, list(nodes)) 
