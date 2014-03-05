@@ -60,9 +60,6 @@ class Communities(object):
             return list(b)
         except TypeError:
             return []
-
-    def get_node_list(self):
-        return self.nodes
     
     def size(self, c):
         return len(self.communities[c])
@@ -78,10 +75,6 @@ class Communities(object):
         keys = sorted(self.communities.keys())
         # rename communities and return
         return {i:list(self.communities[x]) for i, x in enumerate(keys)}
-
-    @property
-    def length(self):
-        return len(self.communities.keys())
 
     @property
     def largest(self):
@@ -108,3 +101,6 @@ class Communities(object):
         except KeyError:
             com = []
         return list(com)
+
+    def __len__(self):
+        return len(self.communities.keys())
