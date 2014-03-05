@@ -39,8 +39,11 @@ def initialize(filepath, args):
         C = Labels(xrange(n), k)
         #labelprop.dalpa(A, m, n, k, C, False)
         labelprop.bdpa(A, m, n, k, C)
-        print C.get_communities()
-        print modularity.modularity(A, k, m, C)
+        coms = C.dict_renamed
+        new_mat = louvain.second_phase(A, coms)
+        new_k = [float(new_mat.data[new_mat.indptr[j]:new_mat.indptr[j+1]].sum()) for j in xrange(new_mat.shape[1])]
+        print coms
+        print modularity.diagonal_modularity(new_mat.diagonal(), new_k, 0.5*new_mat.sum())
     else:
         louvain.louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump)
 

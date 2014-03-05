@@ -13,43 +13,33 @@ def dpa(A, m, n, k):
     # Run defensive dalpa on the network    
     C = Labels(xrange(n), k)
     dalpa(A, m, n, k, C, False)
-    print "we are in dpa, numcoms: ", len(C.get_communities_renamed())
+    print "we are in dpa, numcoms: ", len(C.dict_renamed)
     
 
     # Construct community network, and run offensive dalpa
-    B = second_phase(A, C.get_communities_renamed())
+    B = second_phase(A, C.dict_renamed)
     bn = B.shape[1]
     bk = [float(B.data[B.indptr[j]:B.indptr[j+1]].sum()) for j in xrange(bn)]
     BC = Labels(xrange(bn), bk)
     dalpa(B, m, bn, bk, BC, True)
     
-    print "processed community network, numcoms ", len(BC.get_communities_renamed())
+    print "processed community network, numcoms ", len(BC.dict_renamed)
     newcoms = None
+
     if len(BC.get_communities()) == 1:
          print 'continuing with modified bdpa'
          bdpa_modified(A, m, n, k, C)
     else:
-        # extracting the largest community in terms of nodes from PASS 0
-        if len(BC.get_communities_renamed) == bn:
-            largest = C.get_largest_community()[0]
-            nodes = C.get_nodes(largest)
-    
-        # isolate the vertices
-        C.delete_community(largest, k)
-        
-    #     D = A[Anodes,:][:, Anodes]
-    #     dm = 0.5 * D.sum()
-    #     dn = D.shape[1]
-    #     dk = [float(D.data[D.indptr[j]:D.indptr[j+1]].sum()) for j in xrange(dn)]
-    #     newcoms = dpa(D, dm, dn, dk)[0]
+        # extract the largest community in terms of nodes from PASS 0
+        return
 
-    # communities = C.get_communities_renamed()
+    
     if newcoms is not None:
         for com, nodes in newcoms.iteritems():
             orgnodes = Anodes[nodes]
             C.insert_community(orgnodes, k[orgnodes])
     
-    communities = C.get_communities_renamed()
+    communities = C.dict_renamed
     
     return communities, modularity.modularity(A, k, m, C)
 
@@ -58,12 +48,6 @@ def dalpa(A, m, n, k, C, offensive=False):
     Defensive/Offensive label propagation. 
 
     """
-
-    # function references
-    get_com = C.get_community
-    get_p = C.get_p
-    get_d = C.get_d
-    get_internal = C.get_internal
 
     # initialize some variables
     delta = 0.0
@@ -75,8 +59,7 @@ def dalpa(A, m, n, k, C, offensive=False):
 
         for i in fns.yield_random_modulo(n):
 
-
-            c_i = get_com(i)
+            c_i = C.affiliation(i)
             indices = A.indices[A.indptr[i]:A.indptr[i+1]]
             data = A.data[A.indptr[i]:A.indptr[i+1]]
 
@@ -87,19 +70,19 @@ def dalpa(A, m, n, k, C, offensive=False):
             p_dict = defaultdict(float)
 
             for ind, j in enumerate(indices):
-                c_j = get_com(j)
-                p_j = get_p(j)
+                c_j = C.affiliation(j)
+                p_j = C.p[j]
 
                 if i == j:
                     continue
 
-                d = get_d(j)
+                d = C.d[j]
                 if d < d_dict[c_j]:
                     d_dict[c_j] = d
 
                 if not offensive:
                     neighbor_coms[c_j] += p_j*(1 - delta*d)*data[ind]
-                    p_dict[c_j] += p_j/get_internal(j)
+                    p_dict[c_j] += p_j/C.internal[j]
                 else:
                     neighbor_coms[c_j] += (1 - p_j)*(1 - delta*d)*data[ind]
                     p_dict[c_j] += p_j/k[j]
@@ -117,13 +100,10 @@ def dalpa(A, m, n, k, C, offensive=False):
             if best_match != c_i and best_val > neighbor_coms[c_i]:
 
                 C.move(i, best_match, k[i], com_edges[best_match])
-                C.set_d(i, d_dict[best_match] + 1)
+                C.d[i] = d_dict[best_match] + 1
 
-                if offensive and num_iter > 1:                
-                    C.set_p(i, p_dict[best_match])
-                else:
-                    C.set_p(i, p_dict[best_match])
-
+                if not (offensive and num_iter <= 1):                
+                    C.p[i] = p_dict[best_match]
                 num_moves += 1
 
         num_iter += 1
@@ -132,15 +112,14 @@ def dalpa(A, m, n, k, C, offensive=False):
             delta = 0.0
 
 def bdpa_modified(A, m, n, k, C):
-    coms = C.get_communities_renamed()
-    for c in coms:
-        p_list = [C.get_p(j) for j in coms[c]]
-        # median = fns.kth_largest(p_list, (len(p_list)/2) + 1)
-        for i in coms[c]:
-            if C.get_p(i) <= np.median(p_list):
+    coms = C.dict_renamed
+    for c, nodes in coms.iteritems():
+        p_list = [C.p[j] for j in nodes]
+        for i in C[c]:
+            if C.p[i] <= np.median(p_list):
                 C.move(i, -1, k[i])
-                C.set_d(i, 0)
-                C.set_p(i, 0)
+                C.d[i] = 0
+                C.p[i] = 0
     dalpa(A, m, n, k, C, True)
 
 def bdpa(A, m, n, k, C):

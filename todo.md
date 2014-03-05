@@ -1,5 +1,6 @@
 ##Todo:
 - [ ] Generate Erdoz-Renyi random graphs for benchmarking
+- [ ] Generate Girvan-Newman random  graphs for benchmarking
 - [ ] Generate Benchmark graphs.
 - [ ] "Test suite" for testing against random graphs. Output NMI, NVI etc.
 - [x] Data structure in modularity.py
@@ -10,3 +11,4 @@
 - [ ] make new A directly?
 
 ##Issues:
+- [ ] possible division by zero fault 

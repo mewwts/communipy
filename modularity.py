@@ -15,7 +15,7 @@ def modularity(A, k, m, C):
 
     """
     q = 0.0
-    for com, c in C.get_communities().iteritems():
+    for com, c in C:
         rowslice = A[c,:]
         q += (1.0/(2*m))*np.sum(rowslice.data[np.in1d(rowslice.indices, c)]) -\
              (C.get_community_strength(com)/(2*m))**2
@@ -27,17 +27,15 @@ def calc_modularity(data, indices, m, k, C, i):
     community of its neighbors
 
     """
-    getcom = C.get_community
-    getcomstrength = C.get_community_strength
     movein = {}
     k_i = k[i]
-    c_i = getcom(i)
+    c_i = C.affiliation(i)
     const = k_i/(2.0*m**2)
-    moveout = (2.0/(4.0*m**2))*k_i*(getcomstrength(c_i) - k_i)
+    moveout = (2.0/(4.0*m**2))*k_i*(C.strength[c_i] - k_i)
     max_movein = (-1, -1.0)
     for ind,j in enumerate(indices): 
         
-        c_j = getcom(j)
+        c_j = C.affiliation(j)
         if c_j == c_i:
             if i != j:
                 moveout -= data[ind]/m
@@ -46,7 +44,7 @@ def calc_modularity(data, indices, m, k, C, i):
         if c_j in movein:
             movein[c_j] += data[ind]/m
         else:
-            movein[c_j] = data[ind]/m - const*getcomstrength(c_j)
+            movein[c_j] = data[ind]/m - const*C.strength[c_j]
 
         if movein[c_j] > max_movein[1]:
             max_movein = (c_j, movein[c_j])

@@ -5,8 +5,8 @@ class Labels(Communities):
     def __init__(self, iterable, k):
         super(Labels, self).__init__(iterable, k)
         self.internal = k[:]
-        self.d = [0.0] * len(self._nodes)
-        self.p = [1.0/len(self._nodes)] * len(self._nodes)
+        self.d = [0.0] * len(self.nodes)
+        self.p = [1.0/len(self.nodes)] * len(self.nodes)
 
     def move(self, i, s, k_i, intra=None):
         super(Labels, self).move(i, s, k_i)
@@ -21,6 +21,6 @@ class Labels(Communities):
         # Should avoid this iteration
         for name, coms in com_dict.iteritems():
             for c_i in coms[1:]:
-                for i in self.get_nodes(c_i):
+                for i in self[c_i]:
                     # WILD approximation
                     self._internal[i] = k - self._internal[i]

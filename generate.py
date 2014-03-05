@@ -19,11 +19,12 @@ def erdos_renyi(n1, n2, p1, p2):
                 add(i, j)
 
     for i in xrange(n1,n1+n2):
-        for j in xrange(n1+n2):
-            if j < n1 and random.random() < p2:
+        for j in xrange(i, n1+n2):
                 add(i, j)
-            elif j >= n1:
+        for j in xrange(n1):
+            if random.random() < p2:
                 add(i, j)
+        
 
     A = sparse.coo_matrix(([1 for i in xrange(len(coos))], zip(*coos))).tocsr()
     ncomp, labels = sparse.csgraph.connected_components(A, directed=False)
@@ -33,7 +34,7 @@ def erdos_renyi(n1, n2, p1, p2):
                connected component"
         max_label = max(((count, i) for i, count in
                         enumerate(np.bincount(labels))))[1]
-        
+
         A = A[labels == max_label, :][:, labels == max_label]
 
     return A
