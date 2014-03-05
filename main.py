@@ -22,7 +22,7 @@ def initialize(filepath, args):
         return
     
     n = A.shape[1]
-    k = [float(A.data[A.indptr[j]:A.indptr[j+1]].sum()) for j in xrange(n)]
+    k = np.array(A.sum(axis=1)).reshape(-1,).tolist() 
     m = 0.5*A.sum()
     
     filewriter = Matwriter(filename) if args.output else None

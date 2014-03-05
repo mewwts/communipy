@@ -5,7 +5,7 @@ import functions as fns
 import numpy as np
 import sys
 from collections import defaultdict
-# import numexpr
+import numexpr as nr
 
 
 def dpa(A, m, n, k):
@@ -19,7 +19,8 @@ def dpa(A, m, n, k):
     # Construct community network, and run offensive dalpa
     B = second_phase(A, C.dict_renamed)
     bn = B.shape[1]
-    bk = [float(B.data[B.indptr[j]:B.indptr[j+1]].sum()) for j in xrange(bn)]
+    bk = k = np.array(B.sum(axis=1)).reshape(-1,).tolist()
+
     BC = Labels(xrange(bn), bk)
     dalpa(B, m, bn, bk, BC, True)
     
@@ -44,7 +45,7 @@ def dpa(A, m, n, k):
     return communities, modularity.modularity(A, k, m, C)
 
 def dalpa(A, m, n, k, C, offensive=False):
-    """
+    """s
     Defensive/Offensive label propagation. 
 
     """

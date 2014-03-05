@@ -29,7 +29,7 @@ def louvain(A, m, n, k, filewriter, cytowriter, analyzer, tsh, verbose, dump):
             return
         A = second_phase(A, coms)
         n = A.shape[1]
-        k = [float(A.data[A.indptr[j]:A.indptr[j+1]].sum()) for j in xrange(n)]
+        k = np.array(A.sum(axis=1)).reshape(-1,).tolist()
 
         if dump:
             C.dump(i)

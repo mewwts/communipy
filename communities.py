@@ -63,6 +63,9 @@ class Communities(object):
 
     def get_node_list(self):
         return self.nodes
+    
+    def size(self, c):
+        return len(self.communities[c])
 
     @property
     def dict(self):
