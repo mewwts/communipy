@@ -6,9 +6,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.colors import LogNorm, SymLogNorm
 import seaborn as sns
 
-
-
-
 def blocks(A, nblocks):
     n = A.shape[0]
     block_size = ceil(float(n)/float(nblocks))
@@ -36,7 +33,6 @@ def plot_block_sparsity_structure(A, nblocks):
     ax=plt.subplot(111)
     colormap = matplotlib.colors.LinearSegmentedColormap.from_list('colormap', sns.color_palette("YlOrRd_r", 8)[::-1])
     image=plt.imshow(bins, cmap=colormap, interpolation='none', vmin=0.0,norm = SymLogNorm(linthresh=0.001))
-    
     
     ax.grid(False, which="major")
     ax.grid(False, which="minor")
