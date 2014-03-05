@@ -111,9 +111,11 @@ def dalpa(A, m, n, k, C, offensive=False):
 
             # Move to the best community
             best_match, best_val = max_neighbor
+            if best_match == -1:
+                print("Best match == -1... Hmmm")
+                continue
             if best_match != c_i and best_val > neighbor_coms[c_i]:
-                if com_edges[best_match] == 0:
-                    print("auuuu")
+
                 C.move(i, best_match, k[i], com_edges[best_match])
                 C.set_d(i, d_dict[best_match] + 1)
 
