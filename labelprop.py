@@ -80,11 +80,11 @@ def dalpa(A, m, n, k, C, offensive=False):
             indices = A.indices[A.indptr[i]:A.indptr[i+1]]
             data = A.data[A.indptr[i]:A.indptr[i+1]]
 
-            neighbor_coms = defaultdict(int)
+            neighbor_coms = defaultdict(float)
             max_neighbor = (-1, -1.0)
-            com_edges = defaultdict(int)
+            com_edges = defaultdict(float)
             d_dict = defaultdict(lambda: sys.maxint)
-            p_dict = defaultdict(int)
+            p_dict = defaultdict(float)
 
             for ind, j in enumerate(indices):
                 c_j = get_com(j)
@@ -99,10 +99,10 @@ def dalpa(A, m, n, k, C, offensive=False):
 
                 if not offensive:
                     neighbor_coms[c_j] += p_j*(1 - delta*d)*data[ind]
-                    p_dict[c_j] += float(p_j)/float(get_internal(j))
+                    p_dict[c_j] += p_j/get_internal(j)
                 else:
                     neighbor_coms[c_j] += (1 - p_j)*(1 - delta*d)*data[ind]
-                    p_dict[c_j] += float(p_j)/float(k[j])
+                    p_dict[c_j] += p_j/k[j]
 
                 if neighbor_coms[c_j] > max_neighbor[1]:
                     max_neighbor = (c_j, neighbor_coms[c_j])
