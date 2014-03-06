@@ -5,7 +5,6 @@ from matexport import Matwriter
 from visexport import Viswriter
 from csdexport import Csdwriter
 import modularity
-# from communities import Communities
 from labels import Labels
 import argparse
 from scipy import sparse
@@ -57,10 +56,14 @@ def get_graph(filepath):
     elif ending == '.gml':
         import networkx as nx 
         A = nx.to_scipy_sparse_matrix(nx.read_gml(filepath))
+    elif ending == '.dat':
+        import networkx as nx
+        A = nx.to_scipy_sparse_matrix(nx.read_edgelist(open(filepath, 'r')))
     elif ending == '.gz' or ending == '.txt':
         filename = os.path.splitext(filename)[0]
         import networkx as nx
-        A = nx.to_scipy_sparse_matrix(nx.read_weighted_edgelist(filepath, delimiter =' '))  
+        A = nx.to_scipy_sparse_matrix(
+                nx.read_weighted_edgelist(filepath, delimiter =' '))  
     else:
         raise IOError
     return A
