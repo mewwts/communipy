@@ -1,30 +1,26 @@
 import numpy as np 
 import louvain
 import labelprop
-from matexport import Matwriter
+from export_communities import Exporter
 from visexport import Viswriter
 from csdexport import Csdwriter
 import modularity
 from labels import Labels
+
 import argparse
 from scipy import sparse
 import os
 
 
 
-def initialize(filepath, args):
+def initialize(A, filepath, args):
     filename, ending = os.path.splitext(filepath)
-    try:
-        A = get_graph(filepath)
-    except IOError:
-        print "This file extension is not recognized."
-        return
-    
+
     n = A.shape[1]
     k = np.array(A.sum(axis=1), dtype=float).reshape(-1,).tolist() 
     m = 0.5*A.sum()
     
-    filewriter = Matwriter(filename) if args.output else None
+    exporter = Exporter(filename, n) if args.output else None
     cytowriter = None
     if args.visualize:
         cytowriter = Viswriter(filename, args.vizualize[0],
@@ -50,7 +46,7 @@ def initialize(filepath, args):
         print(modularity.diagonal_modularity(new_mat.diagonal(), new_k, 
                                              0.5*new_mat.sum()))
     else:
-        louvain.louvain(A, m, n, k, filewriter,
+        louvain.louvain(A, m, n, k, exporter,
                         cytowriter, analyzer, tsh, verbose, dump)
 
 def get_graph(filepath):
@@ -86,7 +82,8 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Turn verbosity on")
     parser.add_argument("-o", "--output", action="store_true",
-                        help="Output to .mat file in ./results/")
+                        help="Output community structure to .txt file"
+                              "in ./results/")
     parser.add_argument("-d", "--dump", action="store_true",
                         help="Dump communities into pickle file")
     parser.add_argument("-c", "--csd", action="store_true",
@@ -98,12 +95,18 @@ def main():
                         arg[1] pass# that indicates the community structure")
     parser.add_argument("-p", "--prop", action="store_true", 
                         help="Use labelpropagation algorithm")
+
     args = parser.parse_args()
 
     if os.path.isfile(args.path_to_file):
-            initialize(args.path_to_file, args)
+            try:
+                A = get_graph(args.path_to_file)
+            except IOError:
+                print("This file extension is not recognized.")
+                return
+            initialize(A, args.path_to_file, args)
     else:
-        print "Please provide a valid file"
+        print("Please provide a valid input file")
 
 if __name__ == '__main__':
     main()

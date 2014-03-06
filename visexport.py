@@ -54,6 +54,8 @@ class Viswriter:
 
         # Output for bottom up visualization
         # Tells us the community affiliation for vertices from pass #passnr
+        
+        # NB!! THIS MIGHT BE VERY WRONG....
         ivals = np.array([k for k in self._communities.keys() for j in self._communities[k]], dtype=int)
         jvals = np.array([v for r in self._communities.keys() for v in self._communities[r]], dtype=int)
         a = np.column_stack((jvals, ivals))
