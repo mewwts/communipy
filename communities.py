@@ -8,17 +8,21 @@ class Communities(object):
 
     def move(self, i, s, k_i):
         s_i = self.affiliation(i)
+
+        # remove i from it's community
         self.communities[s_i].remove(i)
 
+        # if there's no nodes left, remove community from dicts
         if not self.communities[s_i]:
             del self.communities[s_i]
             del self.strength[s_i]
-
-        try: # Why not else here
+        
+        # key might not be in strength
+        try:
             self.strength[s_i] -= k_i
         except KeyError:
             pass
-
+        
         if s == -1:
             # Isolate vertex i
             for j in xrange(2*len(self.communities), 0, -1):
