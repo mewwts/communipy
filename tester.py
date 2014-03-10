@@ -1,4 +1,5 @@
 import argparse
+from collections import defaultdict
 import numpy as np
 from scipy import sparse
 from math import log
@@ -13,11 +14,9 @@ def log2(x):
 
 def mutual_information(N):
     hxy = joint_entropy(N)
-    hx = entropy(N, 1) # rows
-    hy = entropy(N, 0) # cols
-
-    return hx + hy - hxy
-
+    h_known = entropy(N.sum(axis=1)) # row sums
+    h_found = entropy(N.sum(axis=0)) # col sums
+    return h_known + h_found - hxy
 
 def joint_entropy(N):
     H = 0
@@ -26,12 +25,11 @@ def joint_entropy(N):
         H += -1 * nij * log2(nij)
     return H
 
-def entropy(N, ax=0):
-    n = N.sum(axis=ax)
+def entropy(n):
     H = 0
-    for i in n:
-        if i !=0:
-            H += -1 * i * log2(i)
+    for e in n:
+        if e !=0:
+            H += -1 * e * log2(e)
     return H
 
 def variation_of_information(N):
@@ -39,22 +37,35 @@ def variation_of_information(N):
     ixy = mutual_information(N)
     return hxy - ixy
 
-def normalized_mutual_information(N):
+def normalized_variation_of_information(N):
     hxy = joint_entropy(N)
-    hx = entropy(N, 1)
-    hy = entropy(N, 0)
+    ixy = mutual_information(N)
+    return 1 - (ixy/hxy)
 
-    return 2*hxy/(hx + hy) # symmetric uncertainty
+def normalized_mutual_information(N):
+    ixy = mutual_information(N)
+    h_known = entropy(N.sum(axis=1))
+    h_found = entropy(N.sum(axis=0))
+    return 2*ixy/(h_known + h_found)
+
+def max_mutual_information(N):
+    ixy = mutual_information(N)
+    h_known = entropy(N.sum(axis=1))
+    h_found = entropy(N.sum(axis=0))
+    return ixy/max((h_known,h_found))
 
 def init(foundpath, knownpath, external=False):
     found = parse(foundpath)
     known = parse(knownpath)
+
     if external:
         known -= 1
-        found -= 1
+        # found -= 1
     
     n_found = len(np.unique(found))
     n_known = len(np.unique(known))
+    
+    # coo-matrix will sum duplicate entries
     confusion = np.asarray(
         sparse.coo_matrix(
             (np.ones(known.shape[0], dtype=float), (known, found)),
@@ -63,6 +74,13 @@ def init(foundpath, knownpath, external=False):
     )
     return confusion/confusion.sum(dtype=float)
 
+def test(found, known):
+    fdict = defaultdict(set)
+    kdict = defaultdict(set)
+    for i, c in enumerate(found):
+        fdict[c].add(i)
+    for i, c in enumerate(known):
+        kdict[c].add(i)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -75,9 +93,11 @@ def main():
         print("Please specify both files")
         return
     N = init(args.found, args.known, args.ext)
-    print N
-    # print NMI(N)
-    print normalized_mutual_information(N)
-
+    # print(N)
+    print("Variation of information (VI): {}".format(variation_of_information(N)))
+    print("Normalized VI: {}".format(normalized_variation_of_information(N)))
+    print("Mutual Information (MI): {}".format(mutual_information(N)))
+    print("Normalized MI: {}".format(normalized_mutual_information(N)))
+    print("Max-normalized MI: {} \n".format(max_mutual_information(N)))
 if __name__ == '__main__':
     main()

@@ -16,6 +16,7 @@ def power(mtx, exp, path=None):
     A = mtx + I
     for i in xrange(int(exp)-1):
         A = A.dot(A)
+    # Ak = A
 
     data = np.array(A[nz[0], nz[1]], dtype=float)[0]
 
@@ -55,6 +56,7 @@ def power_main():
     out_path = args.path_to_output
     if os.path.isfile(in_path) and os.path.isdir(os.path.dirname(in_path)):
         filename, ending = os.path.splitext(in_path)
+        out_path, out_ending = os.path.splitext(out_path)
         try:
             A = main.get_graph(in_path)
         except IOError:
