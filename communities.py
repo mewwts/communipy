@@ -22,15 +22,14 @@ class Communities(object):
             self.strength[s_i] -= k_i
         except KeyError:
             pass
-        
+
         if s == -1:
             # Isolate vertex i
-            for j in xrange(2*len(self.communities), 0, -1):
-                if j not in self.communities:
-                    self.communities[j] = {i}
-                    self.strength[j] = k_i
-                    self.nodes[i] = j
-                    break
+            j = self._unused_key()
+            self.communities[j] = {i}
+            self.strength[j] = k_i
+            self.nodes[i] = j
+
         else:
             self.strength[s] += k_i
             self.nodes[i] = s
@@ -40,11 +39,9 @@ class Communities(object):
                 self._largest = (s, size)
 
     def insert_community(self, nodes, k):
-        newkey = -1
-        for j in xrange(2*len(self.communities), 0, -1):
-            if j not in self.communities:
-                newkey = j
-                self.communities[j] = {}
+        newkey = self._unused_key()
+        self.communities[newkey] = set([])
+        self.strength[newkey] = 0
         for i, node in enumerate(nodes):
             self.move(node, newkey, k[i])
 
@@ -53,6 +50,11 @@ class Communities(object):
         for node in nodes:
             self.move(node, -1, k[node])
  
+    def _unused_key(self):
+        for j in xrange(2*len(self.communities), 0, -1):
+            if j not in self.communities:
+                return j
+
     def affiliation(self, x):
         return self.nodes[x]
 
