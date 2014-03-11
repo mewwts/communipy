@@ -7,28 +7,27 @@ import sys
 from collections import defaultdict
 import numexpr as nr
 
-
 def dpa(A, m, n, k):
 
     # Run defensive dalpa on the network    
     C = Labels(xrange(n), k)
     dalpa(A, m, n, k, C, False)
-    print "we are in dpa, numcoms: ", len(C.dict_renamed)
+    print "DPA, len(communities) = ", len(C.dict_renamed)
 
     # Construct community network, and run offensive dalpa
-    B = second_phase(A, C.dict_renamed)
-    mpng = {i: c for i, c in enumerate(C.dict)} 
-    bk = np.array(B.sum(axis=1), dtype=float).reshape(-1,).tolist()
-    BC = Labels(xrange(B.shape[1]), bk)
-    dalpa(B, m, B.shape[1], bk, BC, True)
-
+    if not len(C) == 1:
+        B = second_phase(A, C.dict_renamed)
+        mpng = {i: c for i, c in enumerate(C.dict)} 
+        bk = np.array(B.sum(axis=1), dtype=float).reshape(-1,).tolist()
+        BC = Labels(xrange(B.shape[1]), bk)
+        dalpa(B, m, B.shape[1], bk, BC, True)
+    else:
+        BC = [1] # Dummy to pass next if
     D = None
 
     if len(BC) == 1:
-         print('continuing with modified bdpa')
-         # C = Labels(xrange(n), k)
-         bdpa(A, m, n, k, C)
-         # bdpa_modified(A, m, n, k, C)
+        C = Labels(xrange(n), k)
+        bdpa(A, m, n, k, C)
     else:
         print("We are recursing")
         # extract the largest community in terms of nodes from PASS 0
@@ -47,14 +46,12 @@ def dpa(A, m, n, k):
         nodes = sorted(nodes)
         node_mpng = {i:j for i, j in enumerate(nodes)}
         A_slice = A[nodes, :][:, nodes]
-        D = dpa(A_slice, A_slice.sum()*0.5, A_slice.shape[1],
-                np.array(A_slice.sum(axis=1), dtype=float).reshape(-1,).tolist())
+        dk = np.array(A_slice.sum(axis=1), dtype=float).reshape(-1,).tolist()
+        D = dpa(A_slice, A_slice.sum()*0.5, A_slice.shape[1], dk)
 
     if D is not None:
         for com, nodes in D:
-            C.insert_community([node_mpng[node] for node in nodes],
-                               [k[node_mpng[node]] for node in nodes])
-
+            C.insert_community([node_mpng[node] for node in nodes], dk)
     return C
 
 def dalpa(A, m, n, k, C, offensive=False):
@@ -109,7 +106,10 @@ def dalpa(A, m, n, k, C, offensive=False):
             # Move to the best community
             best_match, best_val = max_neighbor
             if best_match == -1:
-                print("Best match = -1... Hmmm")
+                print("Best match = -1... ")
+                print i
+                print indices
+                print data
                 continue
             if best_match != c_i and best_val > neighbor_coms[c_i]:
 
