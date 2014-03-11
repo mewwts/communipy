@@ -35,14 +35,12 @@ def initialize(A, filepath, args):
         print("File loaded. {} nodes in the network and total weight"
                "is {}".format(n, m))
     if args.prop:
-        # C = Labels(xrange(n), k)
-        # labelprop.dalpa(A, m, n, k, C, False)
         C = labelprop.dpa(A, m, n, k)
         coms = C.dict_renamed
         new_mat = louvain.second_phase(A, coms)
         new_k = np.array(new_mat.sum(axis=1), 
                          dtype=float).reshape(-1,).tolist()
-        print(len(coms))
+        print("numcoms: {}".format(len(coms)))
         print(modularity.diagonal_modularity(new_mat.diagonal(), new_k, 
                                              0.5*new_mat.sum()))
     else:
