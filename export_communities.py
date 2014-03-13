@@ -5,9 +5,10 @@ class Exporter(object):
     """
     Output community structure in .txt for use in different ways
     """
-    def __init__(self, filename, n):
+    def __init__(self, filename, n, prop=False):
         writename = os.path.basename(filename)
-        self.path = "".join(["results/", writename, "-communities.txt"])
+        propstring = "-prop" if prop else ""
+        self.path = "".join(["results/", writename, propstring,"-communities.txt"])
         self.comlist = np.array(xrange(n))
         self.n = n
 
@@ -18,8 +19,8 @@ class Exporter(object):
         else:
             col = self.comlist[:, -1]
         for key, val in com_dict.iteritems():
-            print val
             affiliation[np.in1d(col, list(val))] = key
+
         if not np.all(col == affiliation):
             self.comlist = np.column_stack((self.comlist, affiliation))
 
