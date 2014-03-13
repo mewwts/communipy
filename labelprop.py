@@ -7,13 +7,28 @@ import sys
 from collections import defaultdict
 import numexpr as nr
 
+def propagate(A, m, n, k, exporter,
+              cytowriter, analyzer, verbose, dump):
+    C = dpa(A, m, n, k)   
+    coms = C.dict_renamed
+    new_mat = second_phase(A, coms)
+    new_k = np.array(new_mat.sum(axis=1), 
+                     dtype=float).reshape(-1,).tolist()    
+
+    print("Found {} communities.".format(len(C)))
+    print("Modularity of {}".format(
+                modularity.diagonal_modularity(
+                    new_mat.diagonal(), new_k, 0.5*new_mat.sum())))
+    if exporter:
+        exporter.write_nodelist(C.dict_renamed)
+        exporter.close()
+        print('Community structure outputted to .txt-file')
+
 def dpa(A, m, n, k):
 
     # Run defensive dalpa on the network    
     C = Labels(xrange(n), k)
     dalpa(A, m, n, k, C, False)
-    print "DPA, len(communities) = ", len(C.dict_renamed)
-
     # Construct community network, and run offensive dalpa
     if not len(C) == 1:
         B = second_phase(A, C.dict_renamed)
