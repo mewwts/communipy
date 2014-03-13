@@ -41,7 +41,7 @@ def exponentiate(A, path=None):
 
 def power_main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("path_to_input", \
+    parser.add_argument("path_to_input",
                         help="Specify the path of the input data set")
     parser.add_argument("-p", "--power", type=int,
                         help="Specify to which power to raise the matrix to")
