@@ -1,11 +1,29 @@
+from collections import defaultdict
+
 class Communities(object):
 
-    def __init__(self, iterable, k):
-        self.nodes = {}.fromkeys(iterable).keys()
-        self.communities = {i:set([i]) for i in self.nodes}
-        self.strength = {i:k[i] for i in xrange(len(k))}
-        self._largest = (0, 1)
+    # def __init__(self, iterable, k):
+    #     self.nodes = {}.fromkeys(iterable).keys()
+    #     self.communities = {i:set([i]) for i in self.nodes}
+    #     self.strength = {i:k[i] for i in xrange(len(k))}
+    #     self._largest = (0, 1)
 
+    def __init__(self, iterable, k):
+        self.nodes = list(iterable)
+        self.communities = {}
+        self.strength = {}
+        self._largest = (0, 1)
+        for i, c in enumerate(iterable):
+            if c not in self.communities:
+                self.communities[c] = set([i])
+                self.strength[c] = k[i]
+            else:
+                self.communities[c].add(i)
+                self.strength[c] += k[i]
+            if self.size(c) > self._largest[1]:
+                self._largest = (c, self.size(c))
+
+        
     def move(self, i, s, k_i):
         s_i = self.affiliation(i)
 

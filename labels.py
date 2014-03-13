@@ -4,7 +4,7 @@ class Labels(Communities):
 
     def __init__(self, iterable, k):
         super(Labels, self).__init__(iterable, k)
-        self.internal = k[:]
+        self.internal = [sum(k[i] for i in self[j]) for j in self.dict.keys()]
         self.d = [0.0] * len(self.nodes)
         self.p = [1.0/len(self.nodes)] * len(self.nodes)
 
