@@ -52,9 +52,12 @@ def get_graph(filepath):
         import networkx as nx 
         A = nx.to_scipy_sparse_matrix(nx.read_gml(filepath))
     elif ending == '.dat':
-        import networkx as nx
-        nxgraph = nx.read_edgelist(open(filepath, 'r'))
-        A = nx.to_scipy_sparse_matrix(nxgraph)
+        # import networkx as nx
+        adjlist = np.genfromtxt(filepath, dtype=int)
+        adjlist -= 1 # 0 indexing
+        A = sparse.coo_matrix((np.ones(adjlist.shape[0]), 
+                               (adjlist[:,0], adjlist[:,1])), dtype=float)
+        A = (A + A.T)*0.5 # Symmetrize
     elif ending == '.gz' or ending == '.txt':
         filename = os.path.splitext(filename)[0]
         import networkx as nx
