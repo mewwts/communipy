@@ -17,8 +17,10 @@ def modularity(A, k, m, C):
     q = 0.0
     for com, c in C:
         rowslice = A[c,:]
-        q += (1.0/(2*m))*np.sum(rowslice.data[np.in1d(rowslice.indices, c)]) -\
-             (C.get_community_strength(com)/(2*m))**2
+        data = rowslice.data
+        indices = rowslice.indices
+        q += ((1.0/(2*m))*np.sum(data[np.in1d(indices, c)]) -
+             (C.strength[com]/(2*m))**2)
     return q
 
 def calc_modularity(data, indices, m, k, C, i):
