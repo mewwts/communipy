@@ -19,8 +19,8 @@ def initialize(A, filepath, args):
     n = A.shape[1]
     k = np.array(A.sum(axis=1), dtype=float).reshape(-1,).tolist() 
     m = 0.5*A.sum()
-    
-    exporter = Exporter(filename, n) if args.output else None
+    prop = True if args.prop else False
+    exporter = Exporter(filename, n, prop) if args.output else None
     cytowriter = None
     if args.visualize:
         cytowriter = Viswriter(filename, args.vizualize[0],
@@ -35,14 +35,8 @@ def initialize(A, filepath, args):
         print("File loaded. {} nodes in the network and total weight"
                "is {}".format(n, m))
     if args.prop:
-        C = labelprop.dpa(A, m, n, k)
-        coms = C.dict_renamed
-        new_mat = louvain.second_phase(A, coms)
-        new_k = np.array(new_mat.sum(axis=1), 
-                         dtype=float).reshape(-1,).tolist()
-        print("numcoms: {}".format(len(coms)))
-        print(modularity.diagonal_modularity(new_mat.diagonal(), new_k, 
-                                             0.5*new_mat.sum()))
+        labelprop.propagate(A, m, n, k, exporter,
+              cytowriter, analyzer, verbose, dump)
     else:
         louvain.louvain(A, m, n, k, exporter,
                         cytowriter, analyzer, tsh, verbose, dump)
