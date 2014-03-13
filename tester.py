@@ -8,9 +8,7 @@ def parse(path):
     return np.loadtxt(path, dtype=int)[:, -1]
 
 def log2(x): 
-        if x == 0:
-            return 0.0
-        return log(x, 2)
+    return log(x, 2)
 
 def mutual_information(N):
     hxy = joint_entropy(N)
@@ -64,7 +62,8 @@ def init(foundpath, knownpath, external=False):
     
     n_found = len(np.unique(found))
     n_known = len(np.unique(known))
-    
+    # test(found, known)
+
     # coo-matrix will sum duplicate entries
     confusion = np.asarray(
         sparse.coo_matrix(
@@ -72,6 +71,7 @@ def init(foundpath, knownpath, external=False):
             shape=(n_known, n_found)
         ).todense()
     )
+    print confusion
     return confusion/confusion.sum(dtype=float)
 
 def test(found, known):
@@ -82,11 +82,17 @@ def test(found, known):
     for i, c in enumerate(known):
         kdict[c].add(i)
 
+    for i in fdict.keys():
+        for j in kdict.keys():
+            if fdict[i] == kdict[j]:
+                print("Found a match")
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("found")
     parser.add_argument("known")
-    parser.add_argument("--ext", action="store_true")
+    parser.add_argument("--ext", action="store_true",
+                        help="Put this if nodes are number from 1.")
     args = parser.parse_args()
     
     if not (args.found and args.known):
@@ -94,10 +100,12 @@ def main():
         return
     N = init(args.found, args.known, args.ext)
     # print(N)
+    print("---Testing {} vs. {}---".format(args.found, args.known))
     print("Variation of information (VI): {}".format(variation_of_information(N)))
     print("Normalized VI: {}".format(normalized_variation_of_information(N)))
     print("Mutual Information (MI): {}".format(mutual_information(N)))
     print("Normalized MI: {}".format(normalized_mutual_information(N)))
     print("Max-normalized MI: {} \n".format(max_mutual_information(N)))
+
 if __name__ == '__main__':
     main()
