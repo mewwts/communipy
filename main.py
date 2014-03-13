@@ -55,7 +55,8 @@ def get_graph(filepath):
         adjlist = np.genfromtxt(filepath, dtype=int)
         adjlist -= 1 # 0 indexing
         A = sparse.coo_matrix((np.ones(adjlist.shape[0]), 
-                               (adjlist[:,0], adjlist[:,1])), dtype=float)
+                               (adjlist[:,0], adjlist[:,1])),
+                              dtype=float).tocsr()
 
     elif ending == '.gz' or ending == '.txt':
         filename = os.path.splitext(filename)[0]
