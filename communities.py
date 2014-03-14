@@ -1,12 +1,5 @@
-from collections import defaultdict
 
 class Communities(object):
-
-    # def __init__(self, iterable, k):
-    #     self.nodes = {}.fromkeys(iterable).keys()
-    #     self.communities = {i:set([i]) for i in self.nodes}
-    #     self.strength = {i:k[i] for i in xrange(len(k))}
-    #     self._largest = (0, 1)
 
     def __init__(self, iterable, k):
         self.nodes = list(iterable)
