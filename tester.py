@@ -52,17 +52,13 @@ def max_mutual_information(N):
     h_found = entropy(N.sum(axis=0))
     return ixy/max((h_known,h_found))
 
-def init(foundpath, knownpath, external=False):
-    found = parse(foundpath)
-    known = parse(knownpath)
+def joint_density(found, known):
 
-    if external:
-        known -= 1
         # found -= 1
     
     n_found = len(np.unique(found))
     n_known = len(np.unique(known))
-    # test(found, known)
+    print("{} x {} density".format(n_found, n_known))
 
     # coo-matrix will sum duplicate entries
     confusion = np.asarray(
@@ -98,7 +94,13 @@ def main():
     if not (args.found and args.known):
         print("Please specify both files")
         return
-    N = init(args.found, args.known, args.ext)
+
+    found = parse(args.found)
+    known = parse(args.known)
+
+    if args.ext:
+        known -= 1    
+    N = joint_density(found, known)
     # print(N)
     print("---Testing {} vs. {}---".format(args.found, args.known))
     print("Variation of information (VI): {}".format(variation_of_information(N)))
