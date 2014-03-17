@@ -5,7 +5,7 @@ from scipy import io, sparse
 from scipy.sparse import linalg
 import main
 
-def power(mtx, exp, path=None):
+def power(mtx, exp):
     # This is not very efficient.
     indptr = mtx.indptr
     indices = mtx.indices
@@ -21,22 +21,15 @@ def power(mtx, exp, path=None):
     data = np.array(A[nz[0], nz[1]], dtype=float)[0]
 
     Ak = sparse.csr_matrix((data, indices, indptr))
-
-    if path:
-        io.savemat(path, {'mat': Ak}, do_compression=True, oned_as='row')
     return Ak
 
-def walk_generator(A, path=None):
+def walk_generator(A):
     I = sparse.identity(A.shape[1], dtype=float)
     inv_mat = linalg.inv((I-A).tocsc()).tocsr()
-    if path:
-        io.savemat(path, {'mat': inv_mat}, do_compression=True, oned_as='row')
     return inv_mat
 
-def exponentiate(A, path=None):
-    exp_mat = linalg.expm(A)
-    if path:
-        io.savemat(path, {'mat': exp_mat}, do_compression=True, oned_as='row')
+def exponentiate(A):
+    exp_mat = linalg.expm(A.tocsc()).tocsr()
     return exp_mat
 
 def power_main():
@@ -54,7 +47,7 @@ def power_main():
     args = parser.parse_args()
     in_path = args.path_to_input
     out_path = args.path_to_output
-    if os.path.isfile(in_path) and os.path.isdir(os.path.dirname(in_path)):
+    if os.path.isfile(in_path):
         filename, ending = os.path.splitext(in_path)
         out_path, out_ending = os.path.splitext(out_path)
         try:
@@ -63,13 +56,15 @@ def power_main():
             print("File format not recognized")
         else:
             if args.power:
-                power(A, args.power, out_path) 
+                mat = power(A, args.power)
             elif args.walk:
-                walk_generator(A, out_path)
+                mat = walk_generator(A)
             elif args.exp:
-                exponentiate(A, out_path)
+                mat = exponentiate(A)
             else:
                 print("No valid arguments, see -h")
+            if out_path:
+                io.savemat(out_path, {'mat': mat}, do_compression=True, oned_as='row')
     else:
         print("Specify a valid parameters")
 
