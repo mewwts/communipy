@@ -4,14 +4,18 @@ import labelprop
 from export_communities import Exporter
 from visexport import Viswriter
 from csdexport import Csdwriter
-import modularity
-from labels import Labels
-
 import argparse
 from scipy import sparse
 import os
-
-
+from collections import namedtuple
+Arguments = namedtuple('Arguments', 
+    ['exporter',
+    'cytowriter',
+    'analyzer',
+    'tsh',
+    'verbose',
+    'dump']
+    )
 
 def initialize(A, filepath, args):
     filename, ending = os.path.splitext(filepath)
@@ -19,6 +23,7 @@ def initialize(A, filepath, args):
     n = A.shape[1]
     k = np.array(A.sum(axis=1), dtype=float).reshape(-1,).tolist() 
     m = 0.5*A.sum()
+
     prop = True if args.prop else False
     exporter = Exporter(filename, n, prop) if args.output else None
     cytowriter = None
@@ -30,16 +35,15 @@ def initialize(A, filepath, args):
     tsh = args.treshold if args.treshold else 0.02
     verbose = args.verbose if args.verbose else False
     dump = args.dump if args.dump else False
+    arguments = Arguments(exporter, cytowriter, analyzer, tsh, verbose, dump)
 
-    if verbose:
+    if arguments.verbose:
         print("File loaded. {} nodes in the network and total weight"
                "is {}".format(n, m))
     if args.prop:
-        labelprop.propagate(A, m, n, k, exporter,
-              cytowriter, analyzer, verbose, dump)
+        labelprop.propagate(A, m, n, k, arguments)
     else:
-        louvain.louvain(A, m, n, k, exporter,
-                        cytowriter, analyzer, tsh, verbose, dump)
+        louvain.louvain(A, m, n, k, arguments)
 
 def get_graph(filepath):
     filename, ending = os.path.splitext(filepath)
