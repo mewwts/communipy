@@ -5,40 +5,41 @@ from scipy import sparse
 import functions as fns
 import time
 
-def louvain(A, m, n, k, exporter, cytowriter, analyzer, tsh, verbose, dump):
+def louvain(A, m, n, k, args): 
     i = 1
     old_q = mod.diagonal_modularity(A.diagonal(), k, m)
     t = time.time()
     while True:
         C = Communities(xrange(n), k)
-        q = first_phase(A, m, n, k, C, old_q, tsh, verbose, i)
+        q = first_phase(A, m, n, k, C, old_q, args.tsh, args.verbose, i)
         coms = C.dict_renamed
-        if exporter:
-            exporter.write_nodelist(coms)
+        if args.exporter:
+            args.exporter.write_nodelist(coms)
         if not (q > old_q):
             print 'It took %s seconds' % (time.time() - t)
-            if not verbose:
+            if not args.verbose:
                 print "pass: %d. # of communities: %d. Q = %f" % (i-1,len(coms),q)
-            if exporter:
-                exporter.close()
+            if args.exporter:
+                args.exporter.close()
                 print('Community structure outputted to .txt-file')
-            if analyzer:
-                analyzer.show()
+            if args.analyzer:
+                args.analyzer.show()
                 print 'CSD dumped to file'
 
             return
+
         A = second_phase(A, coms)
         n = A.shape[1]
         k = np.array(A.sum(axis=1)).reshape(-1,).tolist()
 
-        if dump:
+        if args.dump:
             C.dump(i)
-        if cytowriter:
-            cytowriter.add_pass(coms, A)
-        if analyzer:
-            analyzer.add_pass(coms)
+        if args.cytowriter:
+            args.cytowriter.add_pass(coms, A)
+        if args.analyzer:
+            args.analyzer.add_pass(coms)
 
-        if verbose:
+        if args.verbose:
             print 'pass: %d. # of coms: %d. Q = %f' % (i, len(coms), q)
 
         old_q = q
@@ -46,7 +47,7 @@ def louvain(A, m, n, k, exporter, cytowriter, analyzer, tsh, verbose, dump):
 
 def first_phase(A, m, n, k, C, init_q, tsh, verbose, passnr):
     calc_modularity = mod.calc_modularity
-    # noloops = mod.noloops_calc_modularity
+
     move = C.move
     new_q = init_q 
     

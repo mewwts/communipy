@@ -7,8 +7,7 @@ import sys
 from collections import defaultdict
 import numexpr as nr
 
-def propagate(A, m, n, k, exporter,
-              cytowriter, analyzer, verbose, dump):
+def propagate(A, m, n, k, args):
     C = dpa(A, m, n, k)   
     coms = C.dict_renamed
     new_mat = second_phase(A, coms)
@@ -16,12 +15,12 @@ def propagate(A, m, n, k, exporter,
                      dtype=float).reshape(-1,).tolist()    
 
     print("Found {} communities.".format(len(C)))
-    print("Modularity of {}".format(
-                modularity.diagonal_modularity(
-                    new_mat.diagonal(), new_k, 0.5*new_mat.sum())))
-    if exporter:
-        exporter.write_nodelist(C.dict_renamed)
-        exporter.close()
+    # print("Modularity of {}".format(
+    #             modularity.diagonal_modularity(
+    #                 new_mat.diagonal(), new_k, 0.5*new_mat.sum())))
+    if args.exporter:
+        args.exporter.write_nodelist(C.dict_renamed)
+        args.exporter.close()
         print('Community structure outputted to .txt-file')
 
 def dpa(A, m, n, k):
