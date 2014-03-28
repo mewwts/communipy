@@ -23,6 +23,51 @@ def modularity(A, k, m, C):
              (C.strength[com]/(2*m))**2)
     return q
 
+def single_node_modularity(A, k, m, i):
+    """
+    Calculates the modularity of an isolated node.
+    Args:
+
+    A: Adjacency matrix of the graph
+    k: Degree sequence of the graph
+    m: The total weight of the graph. 0.5 * A.sum()
+    i: the vertex considered
+
+    Returns:
+    A float representing the modularity of the isolated node.
+
+    """
+    return A[i,i]/(2*m) - (k[i]/(2*m))**2
+
+def modularity_of_partition(A, k, m, nodes):
+    """
+    Calculates the modularity of the partition defined by nodes.
+
+    Args:
+
+    A: Adjacency matrix of the graph
+    k: Degree sequence of the graph
+    m: The total weight of the graph. 0.5 * A.sum()
+    nodes: The vertices in the partition
+
+    Returns:
+
+    The modularity of the partition.
+
+    Raises:
+    TypeError when nodes is not a list or np.array
+
+    """
+
+    ks = np.array([k[i] for i in nodes])
+    nodes = list(nodes)
+    data = A[nodes, :][:, nodes].data
+    if len(data) == 0:
+        data = np.array([0.0])
+    q = (1.0/(2*m) * nr.evaluate("sum(data)") -
+            ((1.0/(4*m**2))*nr.evaluate("sum(ks**2)")))
+    return q
+
 def calc_modularity(data, indices, m, k, C, i):
     """"
     Calculates the modularity gain of moving vertex i into the 
@@ -35,8 +80,8 @@ def calc_modularity(data, indices, m, k, C, i):
     const = k_i/(2.0*m**2)
     moveout = (2.0/(4.0*m**2))*k_i*(C.strength[c_i] - k_i)
     max_movein = (-1, -1.0)
-    for ind,j in enumerate(indices): 
-        
+    for ind,j in enumerate(indices):
+
         c_j = C.affiliation(j)
         if c_j == c_i:
             if i != j:
