@@ -8,42 +8,48 @@ from collections import defaultdict
 import numexpr as nr
 
 def propagate(A, m, n, k, args):
-    C = dpa(A, m, n, k)   
+    C = dpa(A, m, n, k, args)   
     coms = C.dict_renamed
     new_mat = second_phase(A, coms)
     new_k = np.array(new_mat.sum(axis=1), 
                      dtype=float).reshape(-1,).tolist()    
 
     print("Found {} communities.".format(len(C)))
-    # print("Modularity of {}".format(
-    #             modularity.diagonal_modularity(
-    #                 new_mat.diagonal(), new_k, 0.5*new_mat.sum())))
+    print("Modularity of {}".format(
+                modularity.diagonal_modularity(
+                    new_mat.diagonal(), new_k, 0.5*new_mat.sum())))
     if args.exporter:
         args.exporter.write_nodelist(C.dict_renamed)
         args.exporter.close()
         print('Community structure outputted to .txt-file')
 
-def dpa(A, m, n, k):
+def dpa(A, m, n, k, args):
 
-    # Run defensive dalpa on the network    
     C = Labels(xrange(n), k)
     dalpa(A, m, n, k, C, False)
-    # Construct community network, and run offensive dalpa
+    D = None
+
+    if args.verbose:
+        print("DDALPA found {} communities".format(len(C)))
+
     if not len(C) == 1:
         B = second_phase(A, C.dict_renamed)
-        mpng = {i: c for i, c in enumerate(C.dict)} 
+        mpng = {i: c for i, c in enumerate(sorted(C.dict_renamed.keys()))} 
         bk = np.array(B.sum(axis=1), dtype=float).reshape(-1,).tolist()
         BC = Labels(xrange(B.shape[1]), bk)
         dalpa(B, m, B.shape[1], bk, BC, True)
     else:
         BC = [1] # Dummy to pass next if
-    D = None
+
+    if args.verbose:
+        print("ODALPA on community network revealed {} communities".format(len(BC)))
 
     if len(BC) == 1:
         C = Labels(xrange(n), k)
         bdpa(A, m, n, k, C)
     else:
         print("We are recursing")
+
         # extract the largest community in terms of nodes from PASS 0
         largest_subset = []
         largest_size = -1
@@ -69,7 +75,7 @@ def dpa(A, m, n, k):
     return C
 
 def dalpa(A, m, n, k, C, offensive=False):
-    """s
+    """
     Defensive/Offensive label propagation. 
 
     """
