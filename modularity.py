@@ -40,32 +40,11 @@ def single_node_modularity(A, k, m, i):
     return A[i,i]/(2*m) - (k[i]/(2*m))**2
 
 def modularity_of_partition(A, k, m, nodes):
-    """
-    Calculates the modularity of the partition defined by nodes.
-
-    Args:
-
-    A: Adjacency matrix of the graph
-    k: Degree sequence of the graph
-    m: The total weight of the graph. 0.5 * A.sum()
-    nodes: The vertices in the partition
-
-    Returns:
-
-    The modularity of the partition.
-
-    Raises:
-    TypeError when nodes is not a list or np.array
-
-    """
-
-    ks = np.array([k[i] for i in nodes])
-    nodes = list(nodes)
-    data = A[nodes, :][:, nodes].data
-    if len(data) == 0:
-        data = np.array([0.0])
-    q = (1.0/(2*m) * nr.evaluate("sum(data)") -
-            ((1.0/(4*m**2))*nr.evaluate("sum(ks**2)")))
+    rowslice = A[nodes,:]
+    data = rowslice.data
+    indices = rowslice.indices
+    q = ((1.0/(2*m))*np.sum(data[np.in1d(indices, nodes)]) -
+         (sum(k[i] for i in nodes)/(2*m))**2)
     return q
 
 def calc_modularity(data, indices, m, k, C, i):
