@@ -1,3 +1,4 @@
+import random
 """
 Functions for generating the cyclic group [0,...n-1]. Use instead of
 random.
@@ -7,7 +8,6 @@ Functions:
     bin_gcd(a, b) <- calculate the gcd of a and b fast
 
 """
-import random
 
 def yield_random_modulo(n):
     """
