@@ -54,8 +54,6 @@ def max_mutual_information(N):
 
 def joint_density(found, known):
 
-        # found -= 1
-    
     n_found = len(np.unique(found))
     n_known = len(np.unique(known))
     print("{} x {} density".format(n_found, n_known))
@@ -67,21 +65,14 @@ def joint_density(found, known):
             shape=(n_known, n_found)
         ).todense()
     )
-    print confusion
     return confusion/confusion.sum(dtype=float)
 
 def test(found, known):
-    fdict = defaultdict(set)
-    kdict = defaultdict(set)
-    for i, c in enumerate(found):
-        fdict[c].add(i)
-    for i, c in enumerate(known):
-        kdict[c].add(i)
-
-    for i in fdict.keys():
-        for j in kdict.keys():
-            if fdict[i] == kdict[j]:
-                print("Found a match")
+    N = joint_density(found, known)
+    return (mutual_information(N),
+            normalized_mutual_information(N),
+            variation_of_information(N),
+            normalized_variation_of_information(N))
 
 def main():
     parser = argparse.ArgumentParser()
