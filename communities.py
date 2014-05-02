@@ -6,10 +6,12 @@ class Communities(object):
         self.communities = {}
         self.strength = {}
         self._largest = (0, 1)
+        self.used = set([])
         for i, c in enumerate(iterable):
             if c not in self.communities:
                 self.communities[c] = set([i])
                 self.strength[c] = k[i]
+                self.used.add(c)
             else:
                 self.communities[c].add(i)
                 self.strength[c] += k[i]
@@ -37,13 +39,12 @@ class Communities(object):
         if s == -1:
             # Isolate vertex i
             j = self._unused_key()
-            self.communities[j] = {i}
+            self.communities[j] = set([i])
             self.strength[j] = k_i
             self.nodes[i] = j
-
         else:
-            self.strength[s] += k_i
             self.nodes[i] = s
+            self.strength[s] += k_i
             self.communities[s].add(i)
             size = len(self.communities[s])
             if size > self._largest[1]:
@@ -62,9 +63,11 @@ class Communities(object):
             self.move(node, -1, k[node])
  
     def _unused_key(self):
-        for j in xrange(2*len(self.communities), 0, -1):
-            if j not in self.communities:
+        for j in xrange(4*len(self.nodes), 0, -1):
+            if j not in self.used:
+                self.used.add(j)
                 return j
+        raise Exception("Couldn't find key")
 
     def affiliation(self, x):
         return self.nodes[x]
@@ -83,8 +86,8 @@ class Communities(object):
 
     @property
     def dict(self):
-        return {key: list(value) for key, value in \
-            self.communities.iteritems()}
+        return {key: list(value) for key, value in 
+                self.communities.iteritems()}
 
     @property
     def dict_renamed(self):
@@ -109,15 +112,15 @@ class Communities(object):
                     self.move(i, coms[0], k[i])
 
     def __iter__(self):
-        for name, nodes in self.communities.iteritems():
-            yield (name, list(nodes))
+        for key in self.communities.keys():
+            yield (key, list(self.communities[key]))
 
     def __getitem__(self, c_i):
         try:
             com = self.communities[c_i]
         except KeyError:
-            com = []
-        return list(com)
+            com = set([])
+        return com
 
     def __len__(self):
         return len(self.communities.keys())
