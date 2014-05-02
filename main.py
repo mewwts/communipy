@@ -1,6 +1,9 @@
 import numpy as np 
 import louvain
 import labelprop
+# import projectx
+import degree_ranking as dr
+import community_dissolve as cd
 from export_communities import Exporter
 from visexport import Viswriter
 from csdexport import Csdwriter
@@ -8,6 +11,7 @@ import argparse
 from scipy import sparse
 import os
 from collections import namedtuple
+
 Arguments = namedtuple('Arguments', 
     ['exporter',
     'cytowriter',
@@ -30,8 +34,8 @@ def initialize(A, filepath, args):
     if args.visualize:
         cytowriter = Viswriter(filename, args.vizualize[0],
                                args.vizualize[1], A)
-    analyzer = Csdwriter(filename) if args.csd else None
 
+    analyzer = Csdwriter(filename) if args.csd else None
     tsh = args.treshold if args.treshold else 0.02
     verbose = args.verbose if args.verbose else False
     dump = args.dump if args.dump else False
@@ -39,11 +43,16 @@ def initialize(A, filepath, args):
 
     if arguments.verbose:
         print("File loaded. {} nodes in the network and total weight"
-               "is {}".format(n, m))
+              "is {}".format(n, m))
     if args.prop:
         labelprop.propagate(A, m, n, k, arguments)
+    elif args.rank:
+        dr.deg_rank_controller(A, m, n, k, arguments)
+    elif args.dissolve:
+        cd.community_dissolve(A, m, n, k, arguments)
     else:
         louvain.louvain(A, m, n, k, arguments)
+        # projectx.louvain(A, m, n, k, arguments)
 
 def get_graph(filepath):
     filename, ending = os.path.splitext(filepath)
@@ -59,8 +68,7 @@ def get_graph(filepath):
         adjlist = np.genfromtxt(filepath, dtype=int)
         adjlist -= 1 # 0 indexing
         A = sparse.coo_matrix((np.ones(adjlist.shape[0]), 
-                               (adjlist[:,0], adjlist[:,1])),
-                              dtype=float).tocsr()
+                    (adjlist[:,0], adjlist[:,1])), dtype=float).tocsr()
 
     elif ending == '.gz' or ending == '.txt':
         filename = os.path.splitext(filename)[0]
@@ -82,18 +90,23 @@ def main():
                         help="Turn verbosity on")
     parser.add_argument("-o", "--output", action="store_true",
                         help="Output community structure to .txt file"
-                              "in ./results/")
-    parser.add_argument("-d", "--dump", action="store_true",
+                             "in ./results/")
+    parser.add_argument("--dump", action="store_true",
                         help="Dump communities into pickle file")
     parser.add_argument("-c", "--csd", action="store_true",
                         help="Output component sizes")
     parser.add_argument("-vis", "--visualize", nargs='+', type=int,
                         help="Export communitiy structure to vizualize with \
-                        e.g. gephi:\
-                        arg[0] pass# that should be the vertices \
-                        arg[1] pass# that indicates the community structure")
+                              e.g. gephi:\
+                              arg[0] pass# that should be the vertices \
+                              arg[1] pass# that indicates the community \
+                              structure")
     parser.add_argument("-p", "--prop", action="store_true", 
                         help="Use labelpropagation algorithm")
+    parser.add_argument("-r", "--rank", action="store_true", 
+                        help="Use degree-rank algorithm")
+    parser.add_argument("-d", "--dissolve", action="store_true",
+                        help="Use community-dissolve algorithm")
 
     args = parser.parse_args()
 
