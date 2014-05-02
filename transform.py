@@ -5,23 +5,14 @@ from scipy import io, sparse
 from scipy.sparse import linalg
 import main
 
-def power(mtx, exp):
-    # This is not very efficient.
-    indptr = mtx.indptr
-    indices = mtx.indices
-    nz = mtx.nonzero()
-    # A = mtx.tolil()
+def matrix_power(mtx, exp):
     I = sparse.identity(mtx.shape[1], dtype=float, format='csr')
-    # A.setdiag([1 for i in xrange(A.shape[1])])
     A = mtx + I
+
     for i in xrange(int(exp)-1):
-        A = A.dot(A)
-    # Ak = A
+        A = A.dot(mtx + I)
 
-    data = np.array(A[nz[0], nz[1]], dtype=float)[0]
-
-    Ak = sparse.csr_matrix((data, indices, indptr))
-    return Ak
+    return A
 
 def walk_generator(A):
     I = sparse.identity(A.shape[1], dtype=float)
@@ -42,8 +33,13 @@ def power_main():
                         action="store_true")
     parser.add_argument("-e", "--exp", help="Calculate exp(A)",
                         action="store_true")
+    parser.add_argument("-r", "--restrict", help="Restrict the elements of the "
+                        "transformed matrix to the coordinates of the nonzero "
+                        "elements of the original matrix.",
+                        action="store_true")
     parser.add_argument("path_to_output", \
         help="Specify where to save output")
+
     args = parser.parse_args()
     in_path = args.path_to_input
     out_path = args.path_to_output
@@ -56,17 +52,25 @@ def power_main():
             print("File format not recognized")
         else:
             if args.power:
-                mat = power(A, args.power)
+                mat = matrix_power(A, args.power)
             elif args.walk:
                 mat = walk_generator(A)
             elif args.exp:
                 mat = exponentiate(A)
             else:
                 print("No valid arguments, see -h")
+
+            if args.restrict:
+                indptr = A.indptr
+                indices = A.indices
+                nz = A.nonzero()
+                data = np.array(mat[nz[0], nz[1]], dtype=float)[0]
+                mat = sparse.csr_matrix((data, indices, indptr))
+
             if out_path:
                 io.savemat(out_path, {'mat': mat}, do_compression=True, oned_as='row')
     else:
-        print("Specify a valid parameters")
+        print("Specify a valid input-file")
 
 
 if __name__ ==  '__main__':
