@@ -1,6 +1,6 @@
 import modularity
 from labels import Labels
-from heapdict2 import heapdict2
+from heapdict import heapdict
 
 class ModCommunities(Labels):
 
@@ -9,9 +9,7 @@ class ModCommunities(Labels):
         Modularity holds {key: (0/1, priority)} pairs
         """
         super(ModCommunities, self).__init__(iterable, k)
-        # self._actual = heapdict2()
-        # self._seen = heapdict2()
-        self.modularity = heapdict2()
+        self.modularity = heapdict()
         self.node_mods = {}
         self.changed = False
 
