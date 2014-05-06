@@ -1,9 +1,4 @@
 import numpy as np 
-import louvain
-import labelprop
-# import projectx
-import degree_ranking as dr
-import community_dissolve as cd
 from export_communities import Exporter
 from visexport import Viswriter
 from csdexport import Csdwriter
@@ -45,12 +40,16 @@ def initialize(A, filepath, args):
         print("File loaded. {} nodes in the network and total weight"
               "is {}".format(n, m))
     if args.prop:
+        import labelprop
         labelprop.propagate(A, m, n, k, arguments)
     elif args.rank:
+        import degree_ranking as dr
         dr.deg_rank_controller(A, m, n, k, arguments)
     elif args.dissolve:
+        import community_dissolve as cd
         cd.community_dissolve(A, m, n, k, arguments)
     else:
+        import louvain
         louvain.louvain(A, m, n, k, arguments)
         # projectx.louvain(A, m, n, k, arguments)
 
