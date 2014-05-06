@@ -8,13 +8,20 @@ class Labels(Communities):
         self.d = [0.0] * len(self.nodes)
         self.p = [1.0/len(self.nodes)] * len(self.nodes)
 
-    def move(self, i, s, k_i, intra=None):
+    def move(self, i, s, k_i, intra=None, nb_dict=None):
+        old = self.nodes[i]
         super(Labels, self).move(i, s, k_i)
         if intra is not None:
             try:
                 self.internal[i] = intra
             except IndexError:
                 'Warning, IndexError: No such vertex in list.'
+        if nb_dict is not None:
+            for j, aij in nb_dict.iteritems():
+                if self.nodes[j] == old:
+                    self.internal[j] -= aij
+                elif self.nodes[j] == self.nodes[i]:
+                    self.internal[j] += aij
 
     def recluster(self, com_dict, k):
         super(Labels, self).recluster(com_dict, k)
