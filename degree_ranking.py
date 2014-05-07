@@ -1,35 +1,20 @@
-# from __future__ import division
 from operator import itemgetter
 from collections import deque
 from communities import Communities
 from labels import Labels
-from louvain import second_phase
 from communities import Communities
 import numpy as np
-import modularity
-import time
+from modularity import get_gain
+from utils import rank
 
-def rank(sequence):
-    """ 
-    Return the index from the original sequence the element
-    has in the sorted array 
+def degree_rank(A, m, n, k, C, q, arguments):
 
-    """
-    ranked = list(zip(*sorted(enumerate(sequence), key=itemgetter(1), reverse=True))[0])
-    return ranked
-
-def deg_rank_controller(A, m, n, k, arguments):
-
-    t = time.time()
-    C = Communities(xrange(n), k)
-    q = modularity.diagonal_modularity(A.diagonal(), k, m)
     consider = rank(k)
     knbs = [set([]) for i in xrange(n)]
     not_seen = set(xrange(n))
-    # moved = set([1]) # dummy
     
     while True:
-        new_q = degree_rank(A, m, n, k, C, knbs, 
+        new_q = degree_rank_inner(A, m, n, k, C, knbs, 
             consider, not_seen, q, arguments)
         not_seen = set(xrange(n))
         consider = rank([k[i] for i in 
@@ -40,14 +25,9 @@ def deg_rank_controller(A, m, n, k, arguments):
         else:
             q = new_q
 
-    if arguments.exporter:
-        arguments.exporter.write_nodelist(C.dict_renamed)
+    return q
 
-    print C.dict
-    print("Modularity = {}".format(q))
-    print('It took %s seconds' % (time.time() - t))
-
-def degree_rank(A, m, n, k, C, knbs, consider, not_seen, old_q, args):
+def degree_rank_inner(A, m, n, k, C, knbs, consider, not_seen, old_q, args):
     """
     Finds the communities of A by the degree-rank method.
 
@@ -101,33 +81,3 @@ def degree_rank(A, m, n, k, C, knbs, consider, not_seen, old_q, args):
             else:
                 queue.append(next)
     return q
-
-def get_gain(data, indices, m, k, C, i, com):
-    """
-    Calculates and returns the gain of moving i to com.
-
-    Args:
-    i: the integer label of the vertex to be moved
-    c_j: the label of the proposed community
-    C: the community object
-
-    Returns:
-    A float representing the modularity of the move.
-
-    """
-    k_i = k[i]
-    c_i = C.affiliation(i)
-    const = k_i/(2.0*m**2)
-    movein = - const*C.strength[com]
-    moveout = (2.0/(4.0*m**2))*k_i*(C.strength[c_i] - k_i)
-    for ind,j in enumerate(indices): 
-        
-        c_j = C.affiliation(j)
-        if c_j == c_i:
-            if i != j:
-                moveout -= data[ind]/m
-            continue
-        elif c_j == com:
-            movein += data[ind]/m
-
-    return movein, moveout
