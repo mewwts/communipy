@@ -1,3 +1,4 @@
+from collections import defaultdict
 import numpy as np
 import numexpr as nr
 from operator import itemgetter
@@ -111,3 +112,124 @@ def noloops_calc_modularity(data, indices, m, k, C, i):
         return -1, -1.0
     
     return max(((i[0], i[1]+moveout) for i in movein.iteritems()), key=itemgetter(1))
+
+def get_gain(data, indices, m, k, C, i, com):
+    """
+    Calculates and returns the gain of moving i to com.
+
+    Args:
+    i: the integer label of the vertex to be moved
+    c_j: the label of the proposed community
+    C: the community object
+
+    Returns:
+    A float representing the modularity of the move.
+
+    """
+    k_i = k[i]
+    c_i = C.affiliation(i)
+    const = k_i/(2.0*m**2)
+    movein = - const*C.strength[com]
+    moveout = (2.0/(4.0*m**2))*k_i*(C.strength[c_i] - k_i)
+    for ind,j in enumerate(indices): 
+        
+        c_j = C.affiliation(j)
+        if c_j == c_i:
+            if i != j:
+                moveout -= data[ind]/m
+            continue
+        elif c_j == com:
+            movein += data[ind]/m
+
+    return movein, moveout
+
+def mass_modularity(nodes, c, A, m, k, C):
+    """
+    Calculates the modularity gain of moving each of the nodes 
+    to the best match.
+
+    Args:
+    nodes: list of nodes in community
+    A: Adjacency matrix in CSR format
+    m: 0.5 * A.sum()
+    k: degree sequence
+    C: Community structure
+
+    Returns:
+    node2c: dict holding best match for vertex i
+    c2node: dict holding vertices of community c
+    dqins: holds the gain of moving vertex i to it's alternative.
+    dqouts: holds the loss of  --"--
+    quv: the modularity of the subsets that is moved. If only one vertex
+         is moved to a community, this is q_i.
+    best_move: the (node, community) move that has the highest
+               modularity gain associated to it
+
+    """
+
+    node2c = {}
+    c2node = defaultdict(set)
+    dqins = {}
+    dqouts = {}
+    quv = defaultdict(float)
+    best_move = (-1, -1)
+
+    for i in nodes:
+        indices = A.indices[A.indptr[i]:A.indptr[i+1]]
+        data = A.data[A.indptr[i]:A.indptr[i+1]]
+        nbs = set([])
+        crossterms = defaultdict(float)
+        movein = {}
+        k_i = k[i]
+        moveout = -(k_i/(2.0*m**2))*(C.strength[c] - k_i)
+        max_movein = (-1, 0.0)
+
+        for ind, j in enumerate(indices):
+            aij = data[ind]
+            k_j = k[j]
+            c_j = C.nodes[j]
+            if c_j == c:
+                if i != j:
+                    moveout += aij/m
+                    qij = aij/(2*m) - (k_i*k_j)/((2*m)**2)
+                    quv[c] += qij
+
+                    try:
+                        nc_j = node2c[j]
+                    except KeyError:
+                        continue
+                    else:
+                        if nc_j != -1:
+                            nbs.add(j)
+                            crossterms[nc_j] += 2*qij
+                continue
+
+            try:
+                movein[c_j] += aij/m
+            except KeyError:
+                movein[c_j] = aij/m - (k_i/(2.0*m**2))*C.strength[c_j]
+
+            if movein[c_j] > max_movein[1]:
+                max_movein = (c_j, movein[c_j])
+
+        dest, q_in = max_movein
+        node2c[i] = dest
+        c2node[dest].add(i)
+        dqins[i] = q_in
+        dqouts[i] = moveout
+
+        if q_in - moveout > best_move[1]:
+            best_move = (i, dest)
+
+        quv[dest] += crossterms[dest]
+
+        qi = C.node_mods[i]
+        quv[dest] += qi
+        quv[c] += qi
+
+        for node in c2node[dest] - (nbs | set([i])):
+            qij = -2*k[i]*k[node]/(2*m)**2
+            quv[dest] += qij
+            quv[c] += qij
+
+    return node2c, c2node, dqins, dqouts, quv, best_move
