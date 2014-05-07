@@ -1,6 +1,6 @@
 import copy
 from labels import Labels
-from louvain import second_phase
+from community_detection import community_network
 import modularity
 import functions as fns
 import numpy as np
@@ -11,11 +11,11 @@ import numexpr as nr
 def propagate(A, m, n, k, args):
     C = dpa(A, m, n, k, args)   
     coms = C.dict_renamed
-    new_mat = second_phase(A, coms)
+    new_mat = community_network(A, coms)
     new_k = np.array(new_mat.sum(axis=1), 
                      dtype=float).reshape(-1,).tolist()    
 
-    print(C.dict_renamed)
+    print("Found {} communities".format(len(C.dict_renamed)))
     print("Modularity of {}".format(
                 modularity.diagonal_modularity(
                     new_mat.diagonal(), new_k, 0.5*new_mat.sum())))
@@ -39,7 +39,7 @@ def dpa(A, m, n, k, args):
     # community in ddC (A) ---> node in community network
     mpng_inv = {com: lv2_node for com, lv2_node in enumerate(sorted(ddC.dict.keys()))}
     
-    A_C = second_phase(A, ddC.dict_renamed)
+    A_C = community_network(A, ddC.dict_renamed)
     k_C = np.array(A_C.sum(axis=1), dtype=float).reshape(-1,).tolist()
     odC = Labels(xrange(A_C.shape[1]), k_C)
     dalpa(A_C, m, A_C.shape[1], k_C, odC, True)
