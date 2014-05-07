@@ -18,11 +18,18 @@ def community_dissolve(A, m, n, k, args):
 
     t = time.time()
     C = ModComs(xrange(n), k, A, m)
-    num_moves = 0
-    # q = sum(C.modularity.values())
+    # num_moves = 0
+    q = C.network_modularity
     while True:
-
         c, (seen, q_c) = C.pop()
+
+        if seen:
+            if C.network_modularity - q < args.tsh:
+                break
+            else:
+                q = C.network_modularity
+            C.unsee_all()
+
         (node2c, c2node, movein,
          moveout, quv, best) = mass_modularity(C[c], c, A, m, k, C)
 
@@ -31,7 +38,7 @@ def community_dissolve(A, m, n, k, args):
         if sum(movein.values()) + sum(quv.values()) > q_c:
             for dest, nodes in c2node.iteritems():
                 for i in nodes:
-                    num_moves += 1
+                    # num_moves += 1
                     if dest != -1:
                         C.move(i, dest, k[i], movein[i],
                                moveout[i], quv[dest])
@@ -43,22 +50,15 @@ def community_dissolve(A, m, n, k, args):
         else:
             i, dest = best
             if movein[i] - moveout[i] > 0:
-                num_moves += 1
-                C.move(i, dest, k[i], movein[i],
-                       moveout[i], C.node_mods[i])
-
-        if num_moves == 0:
-            break
-
-        if seen:
-            num_moves = 0
-            C.unsee_all()
+                # num_moves += 1
+                C.move(i, dest, k[i], movein[i], moveout[i], C.node_mods[i])
 
     if args.exporter:
         args.exporter.write_nodelist(C.dict_renamed)
     print C.dict_renamed
     print("It took {} seconds.".format(time.time() - t))
-    print("Modularity = {}".format(sum(j for i,j in C.modularity.values())))
+    print("Modularity = {}".format(
+        sum(j for i,j in C.modularity.values())))
 
 def mass_modularity(nodes, c, A, m, k, C):
     """
@@ -81,6 +81,7 @@ def mass_modularity(nodes, c, A, m, k, C):
          is moved to a community, this is q_i.
     best_move: the (node, community) move that has the highest
                modularity gain associated to it
+
     """
 
     node2c = {}
