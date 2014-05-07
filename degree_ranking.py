@@ -4,49 +4,50 @@ from collections import deque
 from communities import Communities
 from labels import Labels
 from louvain import second_phase
-from modularity_communities import ModCommunities as ModComs
+from communities import Communities
 import numpy as np
 import modularity
 import time
 
-def rank(tuples):
+def rank(sequence):
+    """ 
+    Return the index from the original sequence the element
+    has in the sorted array 
+
     """
-    Ranks the vertices in 'k' based on the magnitude of the elements.
-
-    Args:
-
-    tuples: list of tuples to sort and rank
-    
-    Returns:
-
-    A list of tuples (i, tuples[i]) sorted in decreasing order
-    
-    """
-    # k_tuples = [(i, k[i]) for i in xrange(len(k))]
-    return [i for i, j in sorted(tuples, key=itemgetter(1), reverse=True)]
+    ranked = list(zip(*sorted(enumerate(sequence), key=itemgetter(1), reverse=True))[0])
+    return ranked
 
 def deg_rank_controller(A, m, n, k, arguments):
+
     t = time.time()
-    C = ModComs(xrange(n), k, A, m)
-    consider = rank([(i, k[i]) for i in xrange(len(k))])
+    C = Communities(xrange(n), k)
+    q = modularity.diagonal_modularity(A.diagonal(), k, m)
+    consider = rank(k)
     knbs = [set([]) for i in xrange(n)]
     not_seen = set(xrange(n))
-    moved = set([1]) # dummy
+    # moved = set([1]) # dummy
     
-    while len(moved) > 0:
-        moved = degree_rank(A, m, n, k, C, knbs, consider, not_seen, arguments)
-        # not_seen = {i for i in xrange(n) if C.d[i] == max(C.d) or len(C[C.nodes[i]]) == 1}
+    while True:
+        new_q = degree_rank(A, m, n, k, C, knbs, 
+            consider, not_seen, q, arguments)
         not_seen = set(xrange(n))
-        consider = rank([(i, k[i]) for i in 
+        consider = rank([k[i] for i in 
             {node for j in not_seen for node in knbs[j]}])
-        # print("consider {}".format(consider))
-        # print("not_seen {}".format(not_seen))
+
+        if new_q - q < arguments.tsh:
+            break
+        else:
+            q = new_q
+
     if arguments.exporter:
         arguments.exporter.write_nodelist(C.dict_renamed)
+
     print C.dict
+    print("Modularity = {}".format(q))
     print('It took %s seconds' % (time.time() - t))
 
-def degree_rank(A, m, n, k, C, knbs, consider, not_seen, args):
+def degree_rank(A, m, n, k, C, knbs, consider, not_seen, old_q, args):
     """
     Finds the communities of A by the degree-rank method.
 
@@ -67,6 +68,7 @@ def degree_rank(A, m, n, k, C, knbs, consider, not_seen, args):
     C: Community object
 
     """
+    q = old_q
     moved = set([])
     index = 0
 
@@ -87,18 +89,18 @@ def degree_rank(A, m, n, k, C, knbs, consider, not_seen, args):
                 movein, moveout = get_gain(data, indices, m, k, C, j, C.nodes[i])
                 if movein + moveout > 0:
                     moved.add(j)
-                    C.move(j, C.nodes[i], k[j], movein, moveout, 0.0)
-                    C.d[j] = C.d[i] + 1
+                    C.move(j, C.nodes[i], k[j])
+                    q += movein - moveout
+
         if not_seen:
             index += 1
             try:
                 next = consider[index]
             except IndexError:
-                return moved
+                return q
             else:
                 queue.append(next)
-
-    return moved
+    return q
 
 def get_gain(data, indices, m, k, C, i, com):
     """
