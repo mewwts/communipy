@@ -5,16 +5,10 @@ from csdexport import Csdwriter
 import argparse
 from scipy import sparse
 import os
-from collections import namedtuple
+from community_detection import community_detect
+from utils import Method
+from utils import Arguments
 
-Arguments = namedtuple('Arguments', 
-    ['exporter',
-    'cytowriter',
-    'analyzer',
-    'tsh',
-    'verbose',
-    'dump']
-    )
 
 def initialize(A, filepath, args):
     filename, ending = os.path.splitext(filepath)
@@ -34,24 +28,29 @@ def initialize(A, filepath, args):
     tsh = args.treshold if args.treshold else 0.02
     verbose = args.verbose if args.verbose else False
     dump = args.dump if args.dump else False
-    arguments = Arguments(exporter, cytowriter, analyzer, tsh, verbose, dump)
+    
 
+
+    if args.prop:
+        import labelprop
+        method = Method.prop
+    if args.rank:
+        method =  Method.rank
+    elif args.dissolve:
+        method = Method.dissolve
+    else:
+        method = Method.luv
+
+    arguments = Arguments(exporter, cytowriter, analyzer, 
+                          tsh, verbose, dump, method)
+    
     if arguments.verbose:
         print("File loaded. {} nodes in the network and total weight"
               "is {}".format(n, m))
-    if args.prop:
-        import labelprop
+    if arguments.method == Method.prop:
         labelprop.propagate(A, m, n, k, arguments)
-    elif args.rank:
-        import degree_ranking as dr
-        dr.deg_rank_controller(A, m, n, k, arguments)
-    elif args.dissolve:
-        import community_dissolve as cd
-        cd.community_dissolve(A, m, n, k, arguments)
     else:
-        import louvain
-        louvain.louvain(A, m, n, k, arguments)
-        # projectx.louvain(A, m, n, k, arguments)
+        community_detect(A, m, n, k, arguments)
 
 def get_graph(filepath):
     filename, ending = os.path.splitext(filepath)
