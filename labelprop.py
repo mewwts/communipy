@@ -1,3 +1,4 @@
+import copy
 from labels import Labels
 from louvain import second_phase
 import modularity
@@ -25,17 +26,18 @@ def propagate(A, m, n, k, args):
 
 def dpa(A, m, n, k, args):
     """ Diffusion and propagation algorithm """
-    D = None
-
+    
     ddC = Labels(xrange(n), k)
     dalpa(A, m, n, k, ddC, False)
-    ddalpaQ = modularity.modularity(A, k, m, ddC)
+    ddQ = modularity.modularity(A, k, m, ddC)
 
     if args.verbose:
         print("DDALPA found {} communities".format(len(ddC)))
 
-    # node in A_C ---> community in ddC (A)
-    mpng = {i: c for i, c in enumerate(sorted(ddC.dict.keys()))}
+    # node in community network ---> community in ddC (A)
+    mpng = {lv2_node: com for com, lv2_node in enumerate(sorted(ddC.dict.keys()))}
+    # community in ddC (A) ---> node in community network
+    mpng_inv = {com: lv2_node for com, lv2_node in enumerate(sorted(ddC.dict.keys()))}
     
     A_C = second_phase(A, ddC.dict_renamed)
     k_C = np.array(A_C.sum(axis=1), dtype=float).reshape(-1,).tolist()
@@ -46,55 +48,47 @@ def dpa(A, m, n, k, args):
     if args.verbose:
         print("ODALPA on community network revealed {} communities".format(len(odC)))
 
-    if odalpaQ >= ddalpaQ and len(odC) != 1:
-        print "we in here!"
-        # map the nodes in pass one to the communities from the community network.
-        mapping = [0] * n
+    if odalpaQ >= ddQ: #and len(odC) != 1:
+        # We wish to regroup the nodes into the partitioning determined
+        # by offensive dalpa on the community network.
+        
+        n2c_mpng = [0] * n
         for o_c, o_nodes in odC:
+            # community in community network, 
+            # nodes(communities in the original network) of this community
             for o_node in o_nodes:
+                # for each of these communities(nodes)
                 for node in ddC.communities[mpng[o_node]]:
-                    mapping[node] = o_c
+                    #map every node in the community o_node to o_c
+                    n2c_mpng[node] = o_c
 
-        ddC = Labels(mapping, k)
+        ddC = Labels(n2c_mpng, k)
         ddQ = odalpaQ
 
-    elif len(odC) == 1:
-        print "flood-filled"
+    if len(odC) == 1:
         # Starting over, really.
-        C = Labels(xrange(n), k)
-        bdpa(A, m, n, k, C)
+        ddC = Labels(xrange(n), k)
+        bdpa(A, m, n, k, ddC)
     else:
         print("We are recursing")
-        # extract the largest community in terms of nodes from PASS 0
-        largest_subset = []
 
-        # community ---> nodes in A
-        inv_mpng = defaultdict(list)
-        for i, c in mpng.iteritems():
-            inv_mpng[c].append[i]
-
-        for c, nodes in odC:
-            size = 0
-            subset = []
-            for node in nodes: 
-                subset.extend(inv_mpng[node])
-                size += C.size(inv_mpng[node])
-            if size > len(largest_subset):
-                largest_subset = subset
-
-        subset.sort()
-        node_mpng = {i:j for i, j in enumerate(subset)}
-        A_slice = A[subset, :][:, subset] # This is probably costly
-        dk = np.array(A_slice.sum(axis=1), dtype=float).reshape(-1,).tolist()
+        largest_subset = list(ddC[ddC.largest[0]])
+        
+        largest_subset.sort()
+        
+        node_mpng = {i:j for i, j in enumerate(largest_subset)}
+        
+        A_slice = A[largest_subset, :][:, largest_subset] # This is probably costly
+        dk = np.array(A_slice.sum(axis=1), dtype=float).reshape(-1, ).tolist()
         D = dpa(A_slice, A_slice.sum()*0.5, A_slice.shape[1], dk, args)
 
-        C = ddC.copy()
+        C = copy.deepcopy(ddC)
         for com, nodes in D:
             C.insert_community([node_mpng[node] for node in nodes], dk)
-        if modularity.modularity(A, k, m, C) < ddQ:
-            C = ddC
+        if modularity.modularity(A, k, m, C) > ddQ:
+            ddC = C
 
-    return C
+    return ddC
 
 def dalpa(A, m, n, k, C, offensive=False):
     """
@@ -156,6 +150,8 @@ def dalpa(A, m, n, k, C, offensive=False):
                 print i
                 print indices
                 print data
+                print A.indices
+                print A.data
                 # print C.communities[C.nodes[i]]
                 continue
 
