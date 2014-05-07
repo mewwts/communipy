@@ -12,11 +12,13 @@ class ModCommunities(Labels):
         self.modularity = heapdict()
         self.node_mods = {}
         self.changed = False
+        self.network_modularity = 0.0
 
         for i in iterable:
             q = modularity.single_node_modularity(A, k, m, i)
             self.modularity[i] = (0, q)
             self.node_mods[i] = q
+            self.network_modularity += q
 
     def pop(self, i=0):
         """
@@ -62,6 +64,7 @@ class ModCommunities(Labels):
         if not self.communities[s_i]:
             del self.communities[s_i]
             del self.strength[s_i]
+            self.network_modularity -= self.modularity[s_i][1]
             del self.modularity[s_i]
         
         # key might not be in strength, since we might have deleted it
@@ -79,6 +82,7 @@ class ModCommunities(Labels):
             pass 
         else:
             self.modularity[s_i] = (seen, mod - moveout - quv)
+            self.network_modularity -= (moveout + quv)
 
         if s == -1:
             # Isolate vertex i
@@ -87,16 +91,20 @@ class ModCommunities(Labels):
             self.strength[j] = k_i
             self.nodes[i] = j
             self.modularity[j] = (0, quv)
+            self.network_modularity += quv
+
         else:
             self.nodes[i] = s
             self.communities[s].add(i)
             self.strength[s] += k_i
             (seen, mod) = self.modularity[s]
             self.modularity[s] = (seen, mod + movein + quv)
-
             size = len(self.communities[s])
             if size > self._largest[1]:
                 self._largest = (s, size)
+            self.network_modularity += movein + quv
+            
+
 
     def unsee_all(self):
         for key, (seen, val) in self.modularity.iteritems():
