@@ -184,7 +184,6 @@ def mass_modularity(G, C, nodes, c):
     dqins = {}
     dqouts = {}
     quv = defaultdict(float)
-    best_move = (-1, -1)
 
     for i in nodes:
         indices = A.indices[A.indptr[i]:A.indptr[i+1]]
@@ -230,8 +229,8 @@ def mass_modularity(G, C, nodes, c):
         dqins[i] = q_in
         dqouts[i] = moveout
 
-        if q_in - moveout > best_move[1]:
-            best_move = (i, dest)
+        # if q_in - moveout > best_move[1]:
+        #     best_move = (i, dest)
 
         quv[dest] += crossterms[dest]
 
@@ -243,5 +242,6 @@ def mass_modularity(G, C, nodes, c):
             qij = -2*k[i]*k[node]/(2*m)**2
             quv[dest] += qij
             quv[c] += qij
+            
 
-    return node2c, c2node, dqins, dqouts, quv, best_move
+    return node2c, c2node, dqins, dqouts, quv
