@@ -4,18 +4,18 @@ from heapdict import heapdict
 
 class ModCommunities(Labels):
 
-    def __init__(self, iterable, k, A, m):
+    def __init__(self, iterable, G):
         """
         Modularity holds {key: (0/1, priority)} pairs
         """
-        super(ModCommunities, self).__init__(iterable, k)
+        super(ModCommunities, self).__init__(iterable, G.k)
         self.modularity = heapdict()
         self.node_mods = {}
         self.changed = False
         self.network_modularity = 0.0
 
         for i in iterable:
-            q = modularity.single_node_modularity(A, k, m, i)
+            q = modularity.single_node_modularity(G, i)
             self.modularity[i] = (0, q)
             self.node_mods[i] = q
             self.network_modularity += q
