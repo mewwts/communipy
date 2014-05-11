@@ -24,7 +24,7 @@ def modularity(A, k, m, C):
              (C.strength[com]/(2*m))**2)
     return q
 
-def single_node_modularity(A, k, m, i):
+def single_node_modularity(G, i):
     """
     Calculates the modularity of an isolated node.
     Args:
@@ -38,7 +38,7 @@ def single_node_modularity(A, k, m, i):
     A float representing the modularity of the isolated node.
 
     """
-    return A[i,i]/(2*m) - (k[i]/(2*m))**2
+    return G.A[i,i]/(2*G.m) - (G.k[i]/(2*G.m))**2
 
 def modularity_of_partition(A, k, m, nodes):
     rowslice = A[nodes,:]
@@ -48,12 +48,18 @@ def modularity_of_partition(A, k, m, nodes):
          (sum(k[i] for i in nodes)/(2*m))**2)
     return q
 
-def calc_modularity(data, indices, m, k, C, i):
+def calc_modularity(G, C, i):
     """"
     Calculates the modularity gain of moving vertex i into the 
-    community of its neighbors
+    community of its neighbors.
 
     """
+    A = G.A
+    k = G.k
+    m = G.m
+    indices = A.indices[A.indptr[i]:A.indptr[i+1]]
+    data = A.data[A.indptr[i]:A.indptr[i+1]]
+
     movein = {}
     k_i = k[i]
     c_i = C.affiliation(i)
@@ -113,7 +119,7 @@ def noloops_calc_modularity(data, indices, m, k, C, i):
     
     return max(((i[0], i[1]+moveout) for i in movein.iteritems()), key=itemgetter(1))
 
-def get_gain(data, indices, m, k, C, i, com):
+def get_gain(G, C, i, dest):
     """
     Calculates and returns the gain of moving i to com.
 
@@ -126,10 +132,14 @@ def get_gain(data, indices, m, k, C, i, com):
     A float representing the modularity of the move.
 
     """
-    k_i = k[i]
-    c_i = C.affiliation(i)
+    A = G.A
+    m = G.m
+    data = A.data[A.indptr[i]:A.indptr[i+1]]
+    indices = A.indices[A.indptr[i]:A.indptr[i+1]]
+    k_i = G.k[i]
+    c_i = C.nodes[i]
     const = k_i/(2.0*m**2)
-    movein = - const*C.strength[com]
+    movein = - const*C.strength[dest]
     moveout = (2.0/(4.0*m**2))*k_i*(C.strength[c_i] - k_i)
     for ind,j in enumerate(indices): 
         
@@ -138,22 +148,21 @@ def get_gain(data, indices, m, k, C, i, com):
             if i != j:
                 moveout -= data[ind]/m
             continue
-        elif c_j == com:
+        elif c_j == dest:
             movein += data[ind]/m
 
     return movein, moveout
 
-def mass_modularity(nodes, c, A, m, k, C):
+def mass_modularity(G, C, nodes, c):
     """
     Calculates the modularity gain of moving each of the nodes 
     to the best match.
 
     Args:
+    G: Graph object
     nodes: list of nodes in community
-    A: Adjacency matrix in CSR format
-    m: 0.5 * A.sum()
-    k: degree sequence
     C: Community structure
+    c: affiliation of nodes
 
     Returns:
     node2c: dict holding best match for vertex i
@@ -166,6 +175,9 @@ def mass_modularity(nodes, c, A, m, k, C):
                modularity gain associated to it
 
     """
+    A = G.A
+    k = G.k
+    m = G.m
 
     node2c = {}
     c2node = defaultdict(set)
