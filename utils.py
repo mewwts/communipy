@@ -1,7 +1,9 @@
 from collections import namedtuple
 from enum import Enum
 from operator import itemgetter
+
 Method = Enum('Method', 'luv rank dissolve prop')
+
 Arguments = namedtuple('Arguments', 
     ['exporter',
     'cytowriter',
@@ -11,6 +13,8 @@ Arguments = namedtuple('Arguments',
     'dump',
     'method']
     )
+
+Graph = namedtuple('Graph', ['A', 'm', 'n', 'k'])
 
 def rank(sequence):
     """ 
