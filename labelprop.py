@@ -8,10 +8,11 @@ import sys
 from collections import defaultdict
 import numexpr as nr
 
-def propagate(A, m, n, k, args):
-    C = dpa(A, m, n, k, args)   
+def propagate(G, args):
+    A, m, n, k = G
+    C = dpa(G, args)   
     coms = C.dict_renamed
-    new_mat = community_network(A, coms)
+    new_mat = community_network(G.k, coms)
     new_k = np.array(new_mat.sum(axis=1), 
                      dtype=float).reshape(-1,).tolist()    
 

@@ -7,14 +7,16 @@ import numpy as np
 from modularity import get_gain
 from utils import rank
 
-def degree_rank(A, m, n, k, C, q, arguments):
+def degree_rank(G, C, q, arguments):
 
-    consider = rank(k)
+    k = G.k
+    n = G.n
+    consider = rank(k) 
     knbs = [set([]) for i in xrange(n)]
     not_seen = set(xrange(n))
     
     while True:
-        new_q = degree_rank_inner(A, m, n, k, C, knbs, 
+        new_q = degree_rank_inner(G, C, knbs, 
             consider, not_seen, q, arguments)
         not_seen = set(xrange(n))
         consider = rank([k[i] for i in 
@@ -27,16 +29,13 @@ def degree_rank(A, m, n, k, C, q, arguments):
 
     return q
 
-def degree_rank_inner(A, m, n, k, C, knbs, consider, not_seen, old_q, args):
+def degree_rank_inner(G, C, knbs, consider, not_seen, old_q, args):
     """
     Finds the communities of A by the degree-rank method.
 
     Args: 
 
-    A: Adjacency matrix stored in CSR format.
-    m: 0.5 * A.sum(), the total weight of the graph.
-    n: the number of vertices in the graph. A.shape[1]
-    k: degree sequence of the graph. Rowsum/Colsum.
+    G: Graph object
     C: community structure
     knbs: list of the high degree neighbors of vertex i
     not_seen: set of nodes marked as not not seen
@@ -45,9 +44,13 @@ def degree_rank_inner(A, m, n, k, C, knbs, consider, not_seen, old_q, args):
 
     Returns:
 
-    C: Community object
+    q: modularity
 
     """
+    A = G.A
+    k = G.k
+    m = G.m
+    n = G.n
     q = old_q
     moved = set([])
     index = 0
@@ -66,7 +69,7 @@ def degree_rank_inner(A, m, n, k, C, knbs, consider, not_seen, old_q, args):
             data = A.data[A.indptr[j]:A.indptr[j+1]]
             indices = A.indices[A.indptr[j]:A.indptr[j+1]]
             if C.nodes[i] != C.nodes[j]:
-                movein, moveout = get_gain(data, indices, m, k, C, j, C.nodes[i])
+                movein, moveout = get_gain(G, C, j, C.nodes[i])
                 if movein + moveout > 0:
                     moved.add(j)
                     C.move(j, C.nodes[i], k[j])
@@ -75,7 +78,7 @@ def degree_rank_inner(A, m, n, k, C, knbs, consider, not_seen, old_q, args):
         if not_seen:
             index += 1
             try:
-                next = consider[index]
+                next = consider[index] # should next not be moved?
             except IndexError:
                 return q
             else:

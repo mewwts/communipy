@@ -8,17 +8,19 @@ import os
 from community_detection import community_detect
 from utils import Method
 from utils import Arguments
-
+from utils import Graph
 
 def initialize(A, filepath, args):
     filename, ending = os.path.splitext(filepath)
+    
 
-    n = A.shape[1]
-    k = np.array(A.sum(axis=1), dtype=float).reshape(-1,).tolist() 
+    k = np.array(A.sum(axis=1), dtype=float).reshape(-1,).tolist()
     m = 0.5*A.sum()
+    n = A.shape[0]
+    G = Graph(A, m, n, k)
 
     prop = True if args.prop else False
-    exporter = Exporter(filename, n, prop) if args.output else None
+    exporter = Exporter(filename, G.n, prop) if args.output else None
     cytowriter = None
     if args.visualize:
         cytowriter = Viswriter(filename, args.vizualize[0],
@@ -46,11 +48,11 @@ def initialize(A, filepath, args):
     
     if arguments.verbose:
         print("File loaded. {} nodes in the network and total weight"
-              "is {}".format(n, m))
+              "is {}".format(G.n, G.m))
     if arguments.method == Method.prop:
-        labelprop.propagate(A, m, n, k, arguments)
+        labelprop.propagate(G, arguments)
     else:
-        community_detect(A, m, n, k, arguments)
+        community_detect(G, arguments)
 
 def get_graph(filepath):
     filename, ending = os.path.splitext(filepath)

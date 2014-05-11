@@ -1,7 +1,7 @@
 import modularity as mod
 import functions as fns
 
-def louvain(A, m, n, k, C, init_q, tsh):
+def louvain(G, C, init_q, tsh):
     """
     Find the communities of the graph represented by A using the Louvain
     method.
@@ -14,7 +14,8 @@ def louvain(A, m, n, k, C, init_q, tsh):
     args: flags and objects for data export etc.
 
     """
-
+    n = G.n
+    k = G.k
     calc_modularity = mod.calc_modularity
     move = C.move
     new_q = init_q 
@@ -23,9 +24,7 @@ def louvain(A, m, n, k, C, init_q, tsh):
         old_q = new_q
         
         for i in fns.yield_random_modulo(n):
-            indices = A.indices[A.indptr[i]:A.indptr[i+1]]
-            data = A.data[A.indptr[i]:A.indptr[i+1]]
-            (c, gain) = calc_modularity(data, indices, m, k, C, i)
+            (c, gain) = calc_modularity(G, C, i)
             if gain > 0:
                 move(i, c, k[i])
                 new_q += gain
