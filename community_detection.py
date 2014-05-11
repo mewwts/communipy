@@ -6,24 +6,28 @@ from community_dissolve import community_dissolve
 from degree_ranking import degree_rank
 import modularity
 import numpy as np
+from utils import Graph
 from scipy import sparse
 import time
 
-def community_detect(A, m, n, k, args):
+def community_detect(G, args):
+
     i = 1
     t = time.time()
-    old_q = modularity.diagonal_modularity(A.diagonal(), k, m)
+    old_q = modularity.diagonal_modularity(G.A.diagonal(), G.k, G.m)
 
     while True:
         if args.method == Method.luv:
-            C = Communities(xrange(n), k)
-            q = louvain(A, m, n, k, C, old_q, args.tsh)
+            C = Communities(xrange(G.n), G.k)
+            q = louvain(G, C, old_q, args.tsh)
         elif args.method == Method.dissolve:
-            C = ModComs(xrange(n), k, A, m)
-            q = community_dissolve(A, m, n, k, C, old_q, args)
+            C = ModComs(xrange(G.n), G)
+            q = community_dissolve(G, C, old_q, args)
         elif args.method == Method.rank:
-            C = Communities(xrange(n), k)
-            q = degree_rank(A, m, n, k, C, old_q, args)
+            C = Communities(xrange(G.n), G.k)
+            q = degree_rank(G, C, old_q, args)
+        else:
+            raise Exception("What are you doing here.")
 
         coms = C.dict_renamed
         
@@ -31,9 +35,10 @@ def community_detect(A, m, n, k, args):
             args.exporter.write_nodelist(coms)
         
         if not (q > old_q):
-            print 'It took %s seconds' % (time.time() - t)
+            print("It took {} seconds".format(time.time() - t))
             if not args.verbose:
-                print "pass: %d. # of communities: %d. Q = %f" % (i-1,len(coms),q)
+                print("pass: {}. # of communities: "
+                      "{}. Q = {}".format(i-1, len(coms), q))
             if args.exporter:
                 args.exporter.close()
                 print('Community structure outputted to .txt-file')
@@ -43,19 +48,21 @@ def community_detect(A, m, n, k, args):
             return
 
 
-        A = community_network(A, coms)
-        n = A.shape[1]
-        k = np.array(A.sum(axis=1)).reshape(-1,).tolist()
+        A = community_network(G.A, coms)
+        k = np.array(A.sum(axis=1), dtype=float).reshape(-1,).tolist()
+        m = 0.5*A.sum()
+        n = A.shape[0]
+        G = Graph(A, m, n, k)
 
         if args.dump:
             C.dump(i)
         if args.cytowriter:
-            args.cytowriter.add_pass(coms, A)
+            args.cytowriter.add_pass(coms, G.A)
         if args.analyzer:
             args.analyzer.add_pass(coms)
 
         if args.verbose:
-            print 'pass: %d. # of coms: %d. Q = %f' % (i, len(coms), q)
+            print("pass: {}. # of coms: {}. Q = {}".format(i, len(coms), q))
 
         old_q = q
         i += 1
