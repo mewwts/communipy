@@ -2,7 +2,7 @@ from utils import Method
 from communities import Communities
 from modularity_communities import ModCommunities as ModComs
 from louvain import louvain
-from community_dissolve import community_dissolve
+from dissolve import community_dissolve
 from degree_ranking import degree_rank
 import modularity
 import numpy as np
