@@ -12,7 +12,6 @@ from utils import Graph
 
 def initialize(A, filepath, args):
     filename, ending = os.path.splitext(filepath)
-    
 
     k = np.array(A.sum(axis=1), dtype=float).reshape(-1,).tolist()
     m = 0.5*A.sum()
@@ -36,7 +35,7 @@ def initialize(A, filepath, args):
     if args.prop:
         import labelprop
         method = Method.prop
-    if args.rank:
+    elif args.rank:
         method =  Method.rank
     elif args.dissolve:
         method = Method.dissolve
