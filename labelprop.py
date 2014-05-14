@@ -12,7 +12,7 @@ def propagate(G, args):
     A, m, n, k = G
     C = dpa(G, args)   
     coms = C.dict_renamed
-    new_mat = community_network(G.k, coms)
+    new_mat = community_network(A, coms)
     new_k = np.array(new_mat.sum(axis=1), 
                      dtype=float).reshape(-1,).tolist()    
 
@@ -25,9 +25,9 @@ def propagate(G, args):
         args.exporter.close()
         print('Community structure outputted to .txt-file')
 
-def dpa(A, m, n, k, args):
+def dpa(G, args):
     """ Diffusion and propagation algorithm """
-    
+    A, m, n, k = G
     ddC = Labels(xrange(n), k)
     dalpa(A, m, n, k, ddC, False)
     ddQ = modularity.modularity(A, k, m, ddC)
