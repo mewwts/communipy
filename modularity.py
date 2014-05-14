@@ -162,22 +162,20 @@ def mass_modularity(G, C, nodes, c):
     G: Graph object
     nodes: list of nodes in community
     C: Community structure
-    c: affiliation of nodes
+    c: original affiliation of nodes
 
     Returns:
     node2c: dict holding best match for vertex i
-    c2node: dict holding vertices of community c
-    dqins: holds the gain of moving vertex i to it's alternative.
-    dqouts: holds the loss of  --"--
+    c2node: dict holding the vertices going to community c
+    dqins: holds the global gain of moving vertex i to node2c[i].
+    dqouts: holds the global loss of  --"--
     quv: the modularity of the subsets that is moved. If only one vertex
          is moved to a community, this is q_i.
     best_move: the (node, community) move that has the highest
                modularity gain associated to it
 
     """
-    A = G.A
-    k = G.k
-    m = G.m
+    A, m, n, k = G
 
     node2c = {}
     c2node = defaultdict(set)
@@ -192,7 +190,7 @@ def mass_modularity(G, C, nodes, c):
         crossterms = defaultdict(float)
         movein = {}
         k_i = k[i]
-        moveout = -(k_i/(2.0*m**2))*(C.strength[c] - k_i)
+        moveout = -2*k_i*C.strength[c]/((2*m)**2)
         max_movein = (-1, 0.0)
 
         for ind, j in enumerate(indices):
@@ -200,25 +198,23 @@ def mass_modularity(G, C, nodes, c):
             k_j = k[j]
             c_j = C.nodes[j]
             if c_j == c:
-                if i != j:
-                    moveout += aij/m
-                    qij = aij/(2*m) - (k_i*k_j)/((2*m)**2)
-                    quv[c] += qij
+                moveout += aij/m
 
-                    try:
-                        nc_j = node2c[j]
-                    except KeyError:
-                        continue
-                    else:
-                        if nc_j != -1:
-                            nbs.add(j)
-                            crossterms[nc_j] += 2*qij
+                try:
+                    nc_j = node2c[j]
+                except KeyError:
+                    continue
+                else:
+                    if nc_j != -1:
+                        qij = aij/(2*m) - (k_i*k_j)/(2*m)**2
+                        nbs.add(j)
+                        crossterms[nc_j] += 2*qij
                 continue
 
             try:
                 movein[c_j] += aij/m
             except KeyError:
-                movein[c_j] = aij/m - (k_i/(2.0*m**2))*C.strength[c_j]
+                movein[c_j] = aij/m - 2*k_i*C.strength[c_j]/(2*m)**2
 
             if movein[c_j] > max_movein[1]:
                 max_movein = (c_j, movein[c_j])
@@ -229,19 +225,13 @@ def mass_modularity(G, C, nodes, c):
         dqins[i] = q_in
         dqouts[i] = moveout
 
-        # if q_in - moveout > best_move[1]:
-        #     best_move = (i, dest)
-
         quv[dest] += crossterms[dest]
 
         qi = C.node_mods[i]
         quv[dest] += qi
-        quv[c] += qi
 
         for node in c2node[dest] - (nbs | set([i])):
             qij = -2*k[i]*k[node]/(2*m)**2
             quv[dest] += qij
-            quv[c] += qij
-            
 
     return node2c, c2node, dqins, dqouts, quv
