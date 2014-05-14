@@ -20,7 +20,7 @@ class Communities(object):
 
         
     def move(self, i, s, k_i):
-        s_i = self.affiliation(i)
+        s_i = self.nodes[i]
 
         # remove i from it's community
         self.communities[s_i].remove(i)
@@ -68,9 +68,6 @@ class Communities(object):
                 self.used.add(j)
                 return j
         raise Exception("Couldn't find key")
-
-    def affiliation(self, x):
-        return self.nodes[x]
 
     def neighbors(self, x):
         a = self.communities[self.get_community(x)]
