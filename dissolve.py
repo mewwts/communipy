@@ -29,17 +29,14 @@ def community_dissolve(G, C, init_q, args):
         c, (seen, q_c) = C.pop()
 
         if seen:
-            if C.network_modularity - q < args.tsh:
+            old_q = q
+            q = C.network_modularity
+            if q - old_q < args.tsh:
                 break
-            else:
-                q = C.network_modularity
             C.unsee_all()
 
         (node2c, c2node, movein,
-         moveout, quv) = mass_modularity(G, C, C[c], c)
-
-        quv.pop(c) # Use this value for correct moveout (if moving subsets)
-
+         moveout, quv, best) = mass_modularity(G, C, C[c], c)
 
         if sum(movein.values()) + sum(quv.values()) > q_c:
             # print stats on this
@@ -47,9 +44,8 @@ def community_dissolve(G, C, init_q, args):
                 for i in nodes:
                     move(i, dest)
         else:
-            for i in movein:
-                if movein[i] - moveout[i] > 0:
-                    move(i, node2c[i]) 
-                    # I am not sure if the modularity is right here
+            dest = node2c[best]
+            if dest != -1:
+                C.move(best, dest, k[best], movein[best], moveout[best], C.node_mods[best])
 
     return q
