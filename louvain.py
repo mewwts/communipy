@@ -16,7 +16,7 @@ def louvain(G, C, init_q, tsh):
     """
     n = G.n
     k = G.k
-    calc_modularity = mod.calc_modularity
+    mod_gain = mod.modularity_gain
     move = C.move
     new_q = init_q 
     
@@ -24,7 +24,7 @@ def louvain(G, C, init_q, tsh):
         old_q = new_q
         
         for i in fns.yield_random_modulo(n):
-            (c, movein, moveout) = calc_modularity(G, C, i)
+            (c, movein, moveout) = mod_gain(G, C, i)
             gain = movein + moveout
             if gain > 0:
                 move(i, c, k[i])
