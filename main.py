@@ -46,7 +46,7 @@ def initialize(A, filepath, args):
                           tsh, verbose, dump, method)
     
     if arguments.verbose:
-        print("File loaded. {} nodes in the network and total weight"
+        print("File loaded. {} nodes in the network and total weight "
               "is {}".format(G.n, G.m))
     if arguments.method == Method.prop:
         labelprop.propagate(G, arguments)
