@@ -48,27 +48,25 @@ def modularity_of_partition(A, k, m, nodes):
          (sum(k[i] for i in nodes)/(2*m))**2)
     return q
 
-def calc_modularity(G, C, i):
+def modularity_gain(G, C, i):
     """"
     Calculates the modularity gain of moving vertex i into the 
     community of its neighbors.
 
     """
-    A = G.A
-    k = G.k
-    m = G.m
+    A, m, n, k = G
     indices = A.indices[A.indptr[i]:A.indptr[i+1]]
     data = A.data[A.indptr[i]:A.indptr[i+1]]
 
     movein = {}
     k_i = k[i]
-    c_i = C.affiliation(i)
+    c_i = C.nodes[i]
     const = k_i/(2.0*m**2)
     moveout = (2.0/(4.0*m**2))*k_i*(C.strength[c_i] - k_i)
     max_movein = (-1, -1.0)
     for ind,j in enumerate(indices):
 
-        c_j = C.affiliation(j)
+        c_j = C.nodes[j]
         if c_j == c_i:
             if i != j:
                 moveout -= data[ind]/m
@@ -83,41 +81,9 @@ def calc_modularity(G, C, i):
             max_movein = (c_j, movein[c_j])
 
     if not movein:
-        return -1, -1.0
+        return (-1, -1.0, 0.0)
 
-    return (max_movein[0], max_movein[1] + moveout)
-
-def noloops_calc_modularity(data, indices, m, k, C, i):
-    """
-    Calculates the modularity not allowing loops in the null model
-    """
-    getcom = C.get_community
-    getcomstrength = C.get_community_strength
-    movein = {}
-    k_i = k[i]
-    c_i = getcom(i)
-
-    moveout = k_i*(getcomstrength(c_i) - k_i)/(m*(2*m - getcomstrength(c_i)))
-
-    for ind, j in enumerate(indices):
-        c_j = getcom(j)
-
-        if c_j == c_i:
-            if i != j:
-                moveout -= data[ind]/m
-
-        if c_j in movein:
-            movein[c_j] += data[ind]/m
-        else:
-            k_c = getcomstrength(c_j)
-            movein[c_j] = (data[ind]/m - 
-                           ((k_i*k_c) * (k_c/(2*m-k_c) + 
-                           k_i/(2*m-k_i) + 2))/(2*m*(2*m-k_c-k_i)))
-
-    if not movein:
-        return -1, -1.0
-    
-    return max(((i[0], i[1]+moveout) for i in movein.iteritems()), key=itemgetter(1))
+    return (max_movein[0], max_movein[1],  moveout)
 
 def get_gain(G, C, i, dest):
     """
@@ -132,8 +98,7 @@ def get_gain(G, C, i, dest):
     A float representing the modularity of the move.
 
     """
-    A = G.A
-    m = G.m
+    A, m, n, k = G
     data = A.data[A.indptr[i]:A.indptr[i+1]]
     indices = A.indices[A.indptr[i]:A.indptr[i+1]]
     k_i = G.k[i]
@@ -182,6 +147,7 @@ def mass_modularity(G, C, nodes, c):
     dqins = {}
     dqouts = {}
     quv = defaultdict(float)
+    best_move = (-1, -1)
 
     for i in nodes:
         indices = A.indices[A.indptr[i]:A.indptr[i+1]]
@@ -225,6 +191,9 @@ def mass_modularity(G, C, nodes, c):
         dqins[i] = q_in
         dqouts[i] = moveout
 
+        if q_in - moveout > best_move[1]:
+            best_move = (i, q_in - moveout)
+
         quv[dest] += crossterms[dest]
 
         qi = C.node_mods[i]
@@ -234,4 +203,4 @@ def mass_modularity(G, C, nodes, c):
             qij = -2*k[i]*k[node]/(2*m)**2
             quv[dest] += qij
 
-    return node2c, c2node, dqins, dqouts, quv
+    return node2c, c2node, dqins, dqouts, quv, best_move[0]
