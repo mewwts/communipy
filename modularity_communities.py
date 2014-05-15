@@ -81,8 +81,9 @@ class ModCommunities(Labels):
             #The community has been deleted.
             pass 
         else:
-            self.modularity[s_i] = (seen, mod - moveout - quv)
-            self.network_modularity -= (moveout + quv)
+            self.modularity[s_i] = (seen, mod - moveout + quv)
+            self.network_modularity -= moveout
+            self.network_modularity += quv
 
         if s == -1:
             # Isolate vertex i
@@ -102,7 +103,7 @@ class ModCommunities(Labels):
             size = len(self.communities[s])
             if size > self._largest[1]:
                 self._largest = (s, size)
-            self.network_modularity += movein + quv
+            self.network_modularity += (movein + quv)
             
 
 
