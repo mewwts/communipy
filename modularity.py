@@ -65,17 +65,17 @@ def modularity_gain(G, C, i):
     moveout = (2.0/(4.0*m**2))*k_i*(C.strength[c_i] - k_i)
     max_movein = (-1, -1.0)
     for ind,j in enumerate(indices):
-
+        aij = data[ind]
         c_j = C.nodes[j]
         if c_j == c_i:
             if i != j:
-                moveout -= data[ind]/m
+                moveout -= aij/m
             continue
 
         if c_j in movein:
-            movein[c_j] += data[ind]/m
+            movein[c_j] += aij/m
         else:
-            movein[c_j] = data[ind]/m - const*C.strength[c_j]
+            movein[c_j] = aij/m - const*C.strength[c_j]
 
         if movein[c_j] > max_movein[1]:
             max_movein = (c_j, movein[c_j])
@@ -87,11 +87,11 @@ def modularity_gain(G, C, i):
 
 def get_gain(G, C, i, dest):
     """
-    Calculates and returns the gain of moving i to com.
+    Calculates and returns the gain of moving i to dest.
 
     Args:
     i: the integer label of the vertex to be moved
-    c_j: the label of the proposed community
+    dest: the label of the proposed community
     C: the community object
 
     Returns:
@@ -101,20 +101,19 @@ def get_gain(G, C, i, dest):
     A, m, n, k = G
     data = A.data[A.indptr[i]:A.indptr[i+1]]
     indices = A.indices[A.indptr[i]:A.indptr[i+1]]
-    k_i = G.k[i]
+    k_i = k[i]
     c_i = C.nodes[i]
-    const = k_i/(2.0*m**2)
-    movein = - const*C.strength[dest]
+    movein = - k_i*C.strength[dest]/(2.0*m**2)
     moveout = (2.0/(4.0*m**2))*k_i*(C.strength[c_i] - k_i)
     for ind,j in enumerate(indices): 
-        
-        c_j = C.affiliation(j)
+        aij = data[ind]
+        c_j = C.nodes[j]
         if c_j == c_i:
             if i != j:
-                moveout -= data[ind]/m
+                moveout -= aij/m
             continue
         elif c_j == dest:
-            movein += data[ind]/m
+            movein += aij/m
 
     return movein, moveout
 
@@ -194,10 +193,9 @@ def mass_modularity(G, C, nodes, c):
         if q_in - moveout > best_move[1]:
             best_move = (i, q_in - moveout)
 
-        quv[dest] += crossterms[dest]
-
         qi = C.node_mods[i]
         quv[dest] += qi
+        quv[dest] += crossterms[dest]
 
         for node in c2node[dest] - (nbs | set([i])):
             qij = -2*k[i]*k[node]/(2*m)**2
