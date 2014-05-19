@@ -86,12 +86,12 @@ def dpa(G, args):
         largest_subset.sort()
         node_mpng = {i: j for i, j in enumerate(largest_subset)}
         
-        A_slice = G.A[largest_subset, :][:, largest_subset] # This is probably costly
+        A_sub = G.A[largest_subset, :][:, largest_subset] # This is probably costly
 
-        dk = np.array(A_slice.sum(axis=1), dtype=float).reshape(-1, ).tolist()
-        H = Graph(A_slice, A_slice.sum()*0.5, A_slice.shape[1], dk)
+        H = Graph(A_sub, A_sub.sum()*0.5, A_sub.shape[1],
+                np.array(A_sub.sum(axis=1), dtype=float).reshape(-1, ).tolist()
+                )
         D = dpa(H, args)
-
         C = copy.deepcopy(ddC)
         for com, nodes in D:
             C.insert_community([node_mpng[node] for node in nodes], G.k)
@@ -157,12 +157,12 @@ def dalpa(G, C, offensive=False):
             # Move to the best community
             best_match, best_val = max_neighbor
             if best_match == -1:
-                print("Best match = -1... ")
-                print i
-                print indices
-                print data
-                print A.indices
-                print A.data
+                # print("Best match = -1... ")
+                # print i
+                # print indices
+                # print data
+                # print A.indices
+                # print A.data
                 # print C.communities[C.nodes[i]]
                 continue
 
