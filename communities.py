@@ -5,7 +5,6 @@ class Communities(object):
         self.nodes = list(iterable)
         self.communities = {}
         self.strength = {}
-        self.largest = (0, 1)
         self.used = set([])
         for i, c in enumerate(iterable):
             if c not in self.communities:
@@ -15,8 +14,6 @@ class Communities(object):
             else:
                 self.communities[c].add(i)
                 self.strength[c] += k[i]
-            if self.size(c) > self.largest[1]:
-                self.largest = (c, self.size(c))
 
         
     def move(self, i, s, k_i):
@@ -29,7 +26,6 @@ class Communities(object):
         if not self.communities[s_i]:
             del self.communities[s_i]
             del self.strength[s_i]
-            self._update_largest()
         # key might not be in strength
         try:
             self.strength[s_i] -= k_i
@@ -47,8 +43,6 @@ class Communities(object):
             self.strength[s] += k_i
             self.communities[s].add(i)
             size = len(self.communities[s])
-            if size > self.largest[1]:
-                self.largest = (s, size)
 
     def insert_community(self, nodes, k):
         newkey = self._unused_key()
@@ -103,13 +97,13 @@ class Communities(object):
             for c_i in coms[1:]:
                  for i in self.getnodes(c_i):
                     self.move(i, coms[0], k[i])
-
-    def _update_largest(self):
+    @property
+    def largest(self):
         largest = (-1, -1)
         for c, nodes in self.communities.iteritems():
             if len(nodes) > largest[1]:
                 largest = (c, len(nodes))
-        self.largest = largest
+        return largest[0]
 
     def __iter__(self):
         for key in self.communities.keys():
@@ -123,4 +117,4 @@ class Communities(object):
         return com
 
     def __len__(self):
-        return len(self.communities.keys())
+        return len(self.communities)
