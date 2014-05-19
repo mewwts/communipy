@@ -28,60 +28,65 @@ def propagate(G, args):
 
 def dpa(G, args):
     """ Diffusion and propagation algorithm """
-    A, m, n, k = G
-    ddC = Labels(xrange(n), k)
-    dalpa(A, m, n, k, ddC, False)
-    ddQ = modularity.modularity(A, k, m, ddC)
+    ddC = Labels(xrange(G.n), G.k)
+    dalpa(G, ddC, False)
+    ddQ = modularity.modularity(G.A, G.k, G.m, ddC)
 
     if args.verbose:
         print("DDALPA found {} communities".format(len(ddC)))
 
-    # node in community network ---> community in ddC (A)
-    mpng = {lv2_node: com for com, lv2_node in enumerate(sorted(ddC.communities.keys()))}
-    # community in ddC (A) ---> node in community network
-    mpng_inv = {com: lv2_node for com, lv2_node in enumerate(sorted(ddC.communities.keys()))}
-    
-    A_C = community_network(A, ddC.dict_renamed)
-    k_C = np.array(A_C.sum(axis=1), dtype=float).reshape(-1,).tolist()
-    odC = Labels(xrange(A_C.shape[1]), k_C)
-    dalpa(A_C, m, A_C.shape[1], k_C, odC, True)
-    odalpaQ = modularity.modularity(A_C, k_C, m, odC)
+    if len(ddC) != 1:
+        # node in community network ---> community in ddC (A)
+        mpng = {lv2_node: com for com, lv2_node in enumerate(sorted(ddC.communities.keys()))}
+        # community in ddC (A) ---> node in community network
+        mpng_inv = {com: lv2_node for com, lv2_node in enumerate(sorted(ddC.communities.keys()))}
+            
+        A_C = community_network(G.A, ddC.dict_renamed)
+        G_C = Graph(A_C, 
+                    G.m, 
+                    A_C.shape[1], 
+                    np.array(A_C.sum(axis=1), dtype=float).reshape(-1,).tolist()
+                    )
+        odC = Labels(xrange(G_C.n), G_C.k)
+        dalpa(G_C, odC, True)
+        odalpaQ = modularity.modularity(G_C.A, G_C.k, G_C.m, odC)
 
-    if args.verbose:
-        print("ODALPA on community network revealed {} communities".format(len(odC)))
+        if args.verbose:
+            print("ODALPA on community network revealed {} communities".format(len(odC)))
 
-    if odalpaQ >= ddQ: #and len(odC) != 1:
-        # We wish to regroup the nodes into the partitioning determined
-        # by offensive dalpa on the community network.
-        
-        n2c_mpng = [0] * n
-        for o_c, o_nodes in odC:
-            # community in community network, 
-            # nodes(communities in the original network) of this community
-            for o_node in o_nodes:
-                # for each of these communities(nodes)
-                for node in ddC.communities[mpng_inv[o_node]]:
-                    #map every node in the community o_node to o_c
-                    n2c_mpng[node] = o_c
+        if odalpaQ >= ddQ: #and len(odC) != 1:
+            # We wish to regroup the nodes into the partitioning determined
+            # by offensive dalpa on the community network.
+            
+            n2c_mpng = [0] * G.n
+            for o_c, o_nodes in odC:
+                # community in community network, 
+                # nodes(communities in the original network) of this community
+                for o_node in o_nodes:
+                    # for each of these communities(nodes)
+                    for node in ddC.communities[mpng_inv[o_node]]:
+                        #map every node in the community o_node to o_c
+                        n2c_mpng[node] = o_c
 
-        ddC = Labels(n2c_mpng, k)
-        ddQ = odalpaQ
+            ddC = Labels(n2c_mpng, G.k)
+            ddQ = odalpaQ
+    else:
+        # This is a dummy, so that we can jump into the next if 
+        # that takes us to bdpa!
+        odC = [0]
 
     if len(odC) == 1:
         # Starting over, really.
-        ddC = Labels(xrange(n), k)
-        bdpa(A, m, n, k, ddC)
+        ddC = Labels(xrange(G.n), G.k)
+        bdpa(G, ddC)
     else:
         print("We are recursing")
 
         largest_subset = list(ddC[ddC.largest[0]])
-        print(ddC.largest)
-        print(len(largest_subset))
-        print(ddC.communities)
         largest_subset.sort()
         node_mpng = {i: j for i, j in enumerate(largest_subset)}
         
-        A_slice = A[largest_subset, :][:, largest_subset] # This is probably costly
+        A_slice = G.A[largest_subset, :][:, largest_subset] # This is probably costly
 
         dk = np.array(A_slice.sum(axis=1), dtype=float).reshape(-1, ).tolist()
         H = Graph(A_slice, A_slice.sum()*0.5, A_slice.shape[1], dk)
@@ -89,20 +94,19 @@ def dpa(G, args):
 
         C = copy.deepcopy(ddC)
         for com, nodes in D:
-            C.insert_community([node_mpng[node] for node in nodes], k)
-        new_mod = modularity.modularity(A, k, m, C)
-        print new_mod
+            C.insert_community([node_mpng[node] for node in nodes], G.k)
+        new_mod = modularity.modularity(G.A, G.k, G.m, C)
         if  new_mod > ddQ:
             ddC = C
 
     return ddC
 
-def dalpa(A, m, n, k, C, offensive=False):
+def dalpa(G, C, offensive=False):
     """
     Defensive/Offensive label propagation. 
 
     """
-
+    A, m, n, k = G
     # initialize some variables
     delta = 0.0
     num_iter = 1
@@ -176,17 +180,17 @@ def dalpa(A, m, n, k, C, offensive=False):
         if delta >= 0.5:
             delta = 0.0
 
-def bdpa_modified(A, m, n, k, C):
+def bdpa_modified(G, C):
     coms = C.dict_renamed
     for c, nodes in coms.iteritems():
         p_list = [C.p[j] for j in nodes]
         for i in C[c].copy():
             if C.p[i] <= np.median(p_list):
-                C.move(i, -1, k[i])
+                C.move(i, -1, G.k[i])
                 C.d[i] = 0
                 C.p[i] = 0
-    dalpa(A, m, n, k, C, True)
+    dalpa(G, C, True)
 
-def bdpa(A, m, n, k, C):
-    dalpa(A, m, n, k, C, False)
-    bdpa_modified(A, m, n, k, C)
+def bdpa(G, C):
+    dalpa(G, C, False)
+    bdpa_modified(G, C)
