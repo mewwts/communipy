@@ -1,5 +1,5 @@
 #communitydetection
-==================
+
 Implementation of some community detection algorithms for my project and master's thesis.
 
 2014-01-15: Implementation of the Louvain method is complete.
@@ -11,7 +11,7 @@ Implementation of some community detection algorithms for my project and master'
 
 - [ ] Labelpropagation
     - [ ] Best match = -1
-    - [ ] Infinite recursion
+    - [x] Infinite recursion
 - [ ] Degree-Rank
     - [ ] What subset of the vertices should be fed to the inner loop?
 - [ ] Community-Dissolve

@@ -6,6 +6,7 @@ import functions as fns
 import numpy as np
 import sys
 from collections import defaultdict
+from utils import Graph
 import numexpr as nr
 
 def propagate(G, args):
@@ -36,9 +37,9 @@ def dpa(G, args):
         print("DDALPA found {} communities".format(len(ddC)))
 
     # node in community network ---> community in ddC (A)
-    mpng = {lv2_node: com for com, lv2_node in enumerate(sorted(ddC.dict.keys()))}
+    mpng = {lv2_node: com for com, lv2_node in enumerate(sorted(ddC.communities.keys()))}
     # community in ddC (A) ---> node in community network
-    mpng_inv = {com: lv2_node for com, lv2_node in enumerate(sorted(ddC.dict.keys()))}
+    mpng_inv = {com: lv2_node for com, lv2_node in enumerate(sorted(ddC.communities.keys()))}
     
     A_C = community_network(A, ddC.dict_renamed)
     k_C = np.array(A_C.sum(axis=1), dtype=float).reshape(-1,).tolist()
@@ -59,7 +60,7 @@ def dpa(G, args):
             # nodes(communities in the original network) of this community
             for o_node in o_nodes:
                 # for each of these communities(nodes)
-                for node in ddC.communities[mpng[o_node]]:
+                for node in ddC.communities[mpng_inv[o_node]]:
                     #map every node in the community o_node to o_c
                     n2c_mpng[node] = o_c
 
@@ -74,19 +75,24 @@ def dpa(G, args):
         print("We are recursing")
 
         largest_subset = list(ddC[ddC.largest[0]])
-        
+        print(ddC.largest)
+        print(len(largest_subset))
+        print(ddC.communities)
         largest_subset.sort()
-        
-        node_mpng = {i:j for i, j in enumerate(largest_subset)}
+        node_mpng = {i: j for i, j in enumerate(largest_subset)}
         
         A_slice = A[largest_subset, :][:, largest_subset] # This is probably costly
+
         dk = np.array(A_slice.sum(axis=1), dtype=float).reshape(-1, ).tolist()
-        D = dpa(A_slice, A_slice.sum()*0.5, A_slice.shape[1], dk, args)
+        H = Graph(A_slice, A_slice.sum()*0.5, A_slice.shape[1], dk)
+        D = dpa(H, args)
 
         C = copy.deepcopy(ddC)
         for com, nodes in D:
-            C.insert_community([node_mpng[node] for node in nodes], dk)
-        if modularity.modularity(A, k, m, C) > ddQ:
+            C.insert_community([node_mpng[node] for node in nodes], k)
+        new_mod = modularity.modularity(A, k, m, C)
+        print new_mod
+        if  new_mod > ddQ:
             ddC = C
 
     return ddC
