@@ -100,12 +100,7 @@ class ModCommunities(Labels):
             self.strength[s] += k_i
             (seen, mod) = self.modularity[s]
             self.modularity[s] = (seen, mod + movein + quv)
-            size = len(self.communities[s])
-            if size > self._largest[1]:
-                self._largest = (s, size)
-            self.network_modularity += (movein + quv)
-            
-
+            self.network_modularity += (movein + quv) 
 
     def unsee_all(self):
         for key, (seen, val) in self.modularity.iteritems():
