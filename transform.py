@@ -35,8 +35,14 @@ def reciprocal_ties(A):
             val = aij + A[j, i]
             B[i, j] = val
             B[j, i] = val
-
+    
     return B.tocsr()
+
+def symmetrize(A):
+    return (A + A.T)/2
+
+def extract_largest_component(A):
+    return A
 
 def power_main():
     parser = argparse.ArgumentParser()
@@ -52,8 +58,10 @@ def power_main():
                         "transformed matrix to the coordinates of the nonzero "
                         "elements of the original matrix.",
                         action="store_true")
-    parser.add_argument("-sym", "--recip", action="store_true", 
+    parser.add_argument("--recip", action="store_true", 
                         help="Symmetrize by reciprocal ties")
+    parser.add_argument("--symmetrize", action="store_true", 
+                        help="Symmetrize by the mean of entry ij and ji")
     parser.add_argument("path_to_output", \
         help="Specify where to save output")
 
@@ -76,6 +84,8 @@ def power_main():
                 mat = exponentiate(A)
             elif args.recip:
                 mat = reciprocal_ties(A)
+            elif args.symmetrize:
+                mat = symmetrize(A)
             else:
                 print("No valid arguments, see -h")
 
