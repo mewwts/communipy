@@ -52,6 +52,8 @@ def power_main():
                         "transformed matrix to the coordinates of the nonzero "
                         "elements of the original matrix.",
                         action="store_true")
+    parser.add_argument("-sym", "--recip", action="store_true", 
+                        help="Symmetrize by reciprocal ties")
     parser.add_argument("path_to_output", \
         help="Specify where to save output")
 
@@ -72,6 +74,8 @@ def power_main():
                 mat = walk_generator(A)
             elif args.exp:
                 mat = exponentiate(A)
+            elif args.recip:
+                mat = reciprocal_ties(A)
             else:
                 print("No valid arguments, see -h")
 
