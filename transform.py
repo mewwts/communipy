@@ -42,7 +42,14 @@ def symmetrize(A):
     return (A + A.T)/2
 
 def extract_largest_component(A):
-    return A
+    num_comp, affiliation = sparse.csgraph.connected_components(A)
+    if num_comp == 1:
+        return A
+    max_comp = np.argmax(np.bincount(affiliation))
+    indices = np.arange(A.shape[0])
+    indices = indices[affiliation == max_comp]
+
+    return A[indices, :][:, indices]
 
 def power_main():
     parser = argparse.ArgumentParser()
@@ -62,6 +69,8 @@ def power_main():
                         help="Symmetrize by reciprocal ties")
     parser.add_argument("--symmetrize", action="store_true", 
                         help="Symmetrize by the mean of entry ij and ji")
+    parser.add_argument("-lcc", "--component", action="store_true", 
+                        help="Extract the largest connected component")
     parser.add_argument("path_to_output", \
         help="Specify where to save output")
 
@@ -76,28 +85,31 @@ def power_main():
         except IOError:
             print("File format not recognized")
         else:
+            
             if args.power:
-                mat = matrix_power(A, args.power)
+                A = matrix_power(A, args.power)
             elif args.walk:
-                mat = walk_generator(A)
+                A = walk_generator(A)
             elif args.exp:
-                mat = exponentiate(A)
-            elif args.recip:
-                mat = reciprocal_ties(A)
+                A = exponentiate(A)
+            
+            if args.recip:
+                A = reciprocal_ties(A)
             elif args.symmetrize:
-                mat = symmetrize(A)
-            else:
-                print("No valid arguments, see -h")
+                A = symmetrize(A)
+            
+            if args.components:
+                A = extract_largest_component(A)
 
             if args.restrict:
                 indptr = A.indptr
                 indices = A.indices
                 nz = A.nonzero()
-                data = np.array(mat[nz[0], nz[1]], dtype=float)[0]
-                mat = sparse.csr_matrix((data, indices, indptr))
+                data = np.array(A[nz[0], nz[1]], dtype=float)[0]
+                A = sparse.csr_matrix((data, indices, indptr))
 
             if out_path:
-                io.savemat(out_path, {'mat': mat}, do_compression=True, oned_as='row')
+                io.savemat(out_path, {'mat': A}, do_compression=True, oned_as='row')
     else:
         print("Specify a valid input-file")
 
