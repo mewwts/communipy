@@ -6,6 +6,7 @@ from scipy.sparse import linalg
 import main
 
 def matrix_power(mtx, exp):
+    """ Return the exp power of (mtx + I) """
     I = sparse.identity(mtx.shape[1], dtype=float, format='csr')
     A = mtx + I
 
@@ -15,13 +16,27 @@ def matrix_power(mtx, exp):
     return A
 
 def walk_generator(A):
+    """ Return the walk-generating function of A. """
     I = sparse.identity(A.shape[1], dtype=float)
     inv_mat = linalg.inv((I-A).tocsc()).tocsr()
     return inv_mat
 
 def exponentiate(A):
+    """ Return the matrix exponential of A, exp(A). """
     exp_mat = linalg.expm(A.tocsc()).tocsr()
     return exp_mat
+
+def reciprocal_ties(A):
+    """ Symmetrize A considering reciprocal ties. """
+    A = A.todok()
+    B = sparse.dok_matrix(A.shape)
+    for (i, j), aij in A.iteritems():
+        if (j,i) in A:
+            val = aij + A[j, i]
+            B[i, j] = val
+            B[j, i] = val
+
+    return B.tocsr()
 
 def power_main():
     parser = argparse.ArgumentParser()
@@ -71,7 +86,6 @@ def power_main():
                 io.savemat(out_path, {'mat': mat}, do_compression=True, oned_as='row')
     else:
         print("Specify a valid input-file")
-
 
 if __name__ ==  '__main__':
     power_main()
