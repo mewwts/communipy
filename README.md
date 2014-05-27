@@ -6,11 +6,11 @@ Implementation of some community detection algorithms for my project and master'
 
 ##Todo:
 - [ ] General:
-    - [ ] Generate weighted networks
-    - [ ] Symmetrize by reciprocal ties
+    - [x] Generate weighted networks
+    - [x] Symmetrize by reciprocal ties
 
 - [ ] Labelpropagation
-    - [ ] Best match = -1
+    - [x] Best match = -1: let's just don't care.
     - [x] Infinite recursion
 - [ ] Degree-Rank
     - [ ] What subset of the vertices should be fed to the inner loop?
@@ -18,4 +18,4 @@ Implementation of some community detection algorithms for my project and master'
 
 
 ## Ideas:
-- [ ] CSR-matrix with Python lists?
+- [x] CSR-matrix with Python lists? Doable, but what we really want is O(1) access to indiv. elements. DOK-format does this, perhaps it should be considered.
