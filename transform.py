@@ -69,7 +69,7 @@ def power_main():
                         help="Symmetrize by reciprocal ties")
     parser.add_argument("--symmetrize", action="store_true", 
                         help="Symmetrize by the mean of entry ij and ji")
-    parser.add_argument("-lcc", "--component", action="store_true", 
+    parser.add_argument("-lcc", "--components", action="store_true", 
                         help="Extract the largest connected component")
     parser.add_argument("path_to_output", \
         help="Specify where to save output")
