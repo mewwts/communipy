@@ -57,12 +57,13 @@ def get_graph(filepath):
     filename, ending = os.path.splitext(filepath)
     if ending == '.mat':
         from scipy import io
-        A = sparse.csr_matrix(io.loadmat(filepath)['mat'])
+        A = sparse.csr_matrix(io.loadmat(filepath)['mat'], dtype=float)
     elif ending == '.csv':
-        A = sparse.csr_matrix(np.genfromtxt(filepath, delimiter=','))
+        A = sparse.csr_matrix(np.genfromtxt(filepath, delimiter=','), 
+                              dtype=float)
     elif ending == '.gml':
         import networkx as nx 
-        A = nx.to_scipy_sparse_matrix(nx.read_gml(filepath))
+        A = nx.to_scipy_sparse_matrix(nx.read_gml(filepath), dtype=float)
     elif ending == '.dat':
         adjlist = np.genfromtxt(filepath, dtype=int)
         adjlist -= 1 # 0 indexing
@@ -73,9 +74,10 @@ def get_graph(filepath):
         filename = os.path.splitext(filename)[0]
         import networkx as nx
         A = nx.to_scipy_sparse_matrix(
-                nx.read_weighted_edgelist(filepath, delimiter =' '))  
+                nx.read_weighted_edgelist(filepath, delimiter =' '),
+                dtype=float)  
     else:
-        raise IOError
+        raise IOError("Could not parse file")
     return A
 
 def main():
