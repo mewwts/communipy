@@ -21,14 +21,14 @@ def walk_generator(A):
     inv_mat = linalg.inv((I-A).tocsc()).tocsr()
     return inv_mat
 
-def exponentiate(A):
+def exponentiate(mat):
     """ Return the matrix exponential of A, exp(A). """
-    exp_mat = linalg.expm(A.tocsc()).tocsr()
+    exp_mat = linalg.expm(mat.tocsc()).tocsr()
     return exp_mat
 
-def reciprocal_ties(A):
+def reciprocal_ties(mat):
     """ Symmetrize A considering reciprocal ties. """
-    A = A.todok()
+    A = mat.todok()
     B = sparse.dok_matrix(A.shape)
     for (i, j), aij in A.iteritems():
         if (j,i) in A:
@@ -38,18 +38,28 @@ def reciprocal_ties(A):
     
     return B.tocsr()
 
-def symmetrize(A):
-    return (A + A.T)/2
+def symmetrize(mat):
+    """ Symmetrize by taking the mean of the aij and aji entries """
+    return (mat + mat.T)/2
 
-def extract_largest_component(A):
-    num_comp, affiliation = sparse.csgraph.connected_components(A)
+def extract_largest_component(mat):
+    """ Extract the largest component using scipy's method """
+    num_comp, affiliation = sparse.csgraph.connected_components(mat)
     if num_comp == 1:
-        return A
+        return mat
     max_comp = np.argmax(np.bincount(affiliation))
-    indices = np.arange(A.shape[0])
+    indices = np.arange(mat.shape[0])
     indices = indices[affiliation == max_comp]
 
-    return A[indices, :][:, indices]
+    return mat[indices, :][:, indices]
+
+def edge_restriction(restrictee, restrictor):
+    indptr = restrictor.indptr
+    indices = restrictor.indices
+    nz = restrictor.nonzero()
+    data = np.array(restrictee[nz[0], nz[1]], dtype=float)[0]
+    return sparse.csr_matrix((data, indices, indptr), dtype=float)
+
 
 def power_main():
     parser = argparse.ArgumentParser()
@@ -85,31 +95,29 @@ def power_main():
         except IOError:
             print("File format not recognized")
         else:
-            
             if args.power:
-                A = matrix_power(A, args.power)
+                mat = matrix_power(A, args.power)
             elif args.walk:
-                A = walk_generator(A)
+                mat = walk_generator(A)
             elif args.exp:
-                A = exponentiate(A)
-            
+                mat = exponentiate(A)
+            else:
+                mat = A
+
             if args.recip:
-                A = reciprocal_ties(A)
+                mat = reciprocal_ties(mat)
             elif args.symmetrize:
-                A = symmetrize(A)
+                mat = symmetrize(mat)
             
             if args.components:
-                A = extract_largest_component(A)
+                mat = extract_largest_component(mat)
 
             if args.restrict:
-                indptr = A.indptr
-                indices = A.indices
-                nz = A.nonzero()
-                data = np.array(A[nz[0], nz[1]], dtype=float)[0]
-                A = sparse.csr_matrix((data, indices, indptr))
+                mat = edge_restriction(mat, A)
 
             if out_path:
-                io.savemat(out_path, {'mat': A}, do_compression=True, oned_as='row')
+                io.savemat(out_path, {'mat': A}, do_compression=True,
+                           oned_as='row')
     else:
         print("Specify a valid input-file")
 
