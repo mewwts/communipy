@@ -42,7 +42,6 @@ class Communities(object):
             self.nodes[i] = s
             self.strength[s] += k_i
             self.communities[s].add(i)
-            size = len(self.communities[s])
 
     def insert_community(self, nodes, k):
         newkey = self._unused_key()
