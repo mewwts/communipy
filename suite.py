@@ -4,9 +4,8 @@ import labelprop
 import main
 import numpy as np
 import os
-import glob
 import tester
-# from multiprocessing import Pool
+from multiprocessing import Pool
 from export_communities import Exporter
 from utils import Graph, Arguments, Method
 from community_detection import community_detect
@@ -20,6 +19,7 @@ def get_right_column(comlist, ncom):
     return comlist[:, smallest[0]]
 
 def get_best_column(results):
+    """ Get the result that minimizes the NVI. """
     indices = results[:, -2].argmin(axis=0)
     try:
         idx = indices[0]
@@ -27,135 +27,65 @@ def get_best_column(results):
         idx = indices
     return idx
 
-def test(root):
-    with open('results/results.txt', 'a') as output:
-        # output.write("File\tMI\tNMI\tVI\tNVI\n")
-        output.write("\n")
-        files = []
-        ground_truth = glob.glob(root + '/*truth.dat')[0]
-        walk = glob.glob(root + '/*walk.mat')[0]
-        for filename in os.listdir(root):
-            if filename not in set([os.path.basename(ground_truth), 
-                                '.DS_Store', os.path.basename(walk)]):
-                files.append("".join([root, filename]))
-
-        map(lambda x: run_louvain(x, ground_truth, output), files)
-        map(lambda x: diss_merge(x, ground_truth, output), files)
-        map(lambda x: deg_rank(x, ground_truth, output), files)
-        # map(lambda x: run_prop(x, ground_truth, output), files)
+def get_files(dir):
+    file_list = []
+    for root, dirs, files in os.walk(dir):
+        dir_files = []
+        for f in files:
+            if f.endswith('truth.dat'):
+                truth = "".join([root, f])
+            elif (not f.endswith('walk.dat') and
+                  not f.endswith('.DS_Store')):
+                dir_files.append("".join([root, f]))
+        if files:
+            file_list.append((dir_files, truth))
+    return file_list
 
 
-def run_louvain(f, truth, output):
-    print(f)
-    G = initialize_graph(f)
-    
-    results = [[],[],[],[]]
-    known = tester.parse(truth)
-    known -= 1
-    numcoms = []
-    for i in xrange(10):
+def format(f, mi, nmi, vi, nvi, n_found, n_known, method):
+    return "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
+                  f, mi, nmi, vi, nvi, n_found, n_known, method)
+
+
+class Run(object):
+
+    def __init__(self, truth, method):
+        self.truth = truth
+        self.method = method
+
+    def __call__(self, f):
+        print(self.method)
+        print(f)
+        G = initialize_graph(f)
+        results = [[],[],[],[]]
+        known = tester.parse(self.truth)
+        known -= 1
+        numcoms = []
         exporter = Exporter(f, G.n, False)
-        arguments = Arguments(exporter, None, None, 0.02, False, False, Method.luv)
-        community_detect(G, arguments)
+        arguments = Arguments(exporter, None, None, 0.02,
+                              False, False, self.method)
+        if self.method == Method.prop:
+            labelprop.propagate(G, arguments)
+            found = arguments.exporter.comlist[:, -1]
+            numcoms = np.unique(found)
+            results = tester.ters(found, known)
+        else:
+            community_detect(G, arguments)
+            hierarchy = arguments.exporter.comlist
+            colresult = np.empty(shape=(hierarchy.shape[1], 4))
+            lengths = []
 
-        hierarchy = arguments.exporter.comlist
-        colresult = np.empty(shape=(hierarchy.shape[1], 4))
-        lengths = []
-        for j, column in enumerate(hierarchy.T):
-            lengths.append(len(np.unique(column)))
-            colresult[j, :] = tester.test(column, known)
-        print colresult
-        idx = get_best_column(colresult)
-        found = colresult[idx, :]
-        numcoms.append(lengths[idx])
-        for j, elem in enumerate(found):
-            results[j].append(elem)
+            for j, column in enumerate(hierarchy.T):
+                lengths.append(len(np.unique(column)))
+                colresult[j, :] = tester.test(column, known)
 
-    results = [sum(res)/len(res) for res in results]
-    write(output, os.path.basename(f), results[0], results[1],
-          results[2], results[3], sum(numcoms)/len(numcoms),
-          len(np.unique(known)), "Luv")
-
-def run_prop(f, truth, output):
-    print(f)
-    G = initialize_graph(f)
-    
-    results = [[],[],[],[]]
-    known = tester.parse(truth)
-    known -= 1
-    for i in xrange(10):
-        exporter = Exporter(f, G.n, False)
-        arguments = Arguments(exporter, None, None, 0.02, False, False, Method.prop)
-        labelprop.propagate(G, arguments)
-        found = arguments.exporter.comlist[:, -1]
-        for j, elem in enumerate(tester.test(found, known)):
-            results[j].append(elem)
-    results = [sum(res)/len(res) for res in results]
-    write(output, os.path.basename(f), results[0], results[1],
-          results[2], results[3], len(np.unique(found)),
-          len(np.unique(known)), "Prop")
-
-def deg_rank(f, truth, output):
-    print(f)
-    G = initialize_graph(f)
-  
-    results = [[],[],[],[]]
-    known = tester.parse(truth)
-    known -= 1
-    numcoms = []
-    for i in xrange(10):
-        exporter = Exporter(f, G.n, False)
-        arguments = Arguments(exporter, None, None, 0.02, False, False, Method.luv)
-        community_detect(G, arguments)
-
-        hierarchy = arguments.exporter.comlist
-        colresult = np.empty(shape=(hierarchy.shape[1], 4))
-        lengths = []
-        for j, column in enumerate(hierarchy.T):
-            lengths.append(len(np.unique(column)))
-            colresult[j, :] = tester.test(column, known)
-            
-        idx = get_best_column(colresult)
-        found = colresult[idx, :]
-        numcoms.append(lengths[idx])
-        for j, elem in enumerate(found):
-            results[j].append(elem)
-
-    results = [sum(res)/len(res) for res in results]
-    write(output, os.path.basename(f), results[0], results[1],
-          results[2], results[3], sum(numcoms)/len(numcoms),
-          len(np.unique(known)), "Deg")
-
-def diss_merge(f, truth, output):
-    print(f)
-    G = initialize_graph(f)
-
-    results = [[],[],[],[]]
-    known = tester.parse(truth)
-    known -= 1
-    numcoms = []
-    for i in xrange(10):
-        exporter = Exporter(f, G.n, False)
-        arguments = Arguments(exporter, None, None, 0.02, False, False, Method.luv)
-        community_detect(G, arguments)
-
-        hierarchy = arguments.exporter.comlist
-        colresult = np.empty(shape=(hierarchy.shape[1], 4))
-        lengths = []
-        for j, column in enumerate(hierarchy.T):
-            lengths.append(len(np.unique(column)))
-            colresult[j, :] = tester.test(column, known)
-            
-        idx = get_best_column(colresult)
-        found = colresult[idx, :]
-        numcoms.append(lengths[idx])
-        for j, elem in enumerate(found):
-            results[j].append(elem)
-
-    results = [sum(res)/len(res) for res in results]
-    write(output, os.path.basename(f), results[0], results[1],
-          results[2], results[3], sum(numcoms)/len(numcoms),
-          len(np.unique(known)), "Dissolve")
+            idx = get_best_column(colresult)
+            results = colresult[idx, :]
+            numcoms = lengths[idx]
+                
+        return format(os.path.basename(f), results[0], results[1],
+                results[2], results[3], numcoms,
+                len(np.unique(known)), str(arguments.method).split('.')[-1])
 
 def initialize_graph(f):
     A = main.get_graph(f)
@@ -166,17 +96,46 @@ def initialize_graph(f):
               )
     return G
 
-def write(output, f, mi, nmi, vi, nvi, n_found, n_known, method):
-    output.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
-        f, mi, nmi, vi, nvi, n_found, n_known, method)
-    )
+def output_to_file(filename, results):
+    with open(filename, 'ra') as output:
+        if not output.readline():
+            output.write("File\tMI\tNMI\tVI\tNVI\tn_found\tn_known\tmethod\n")
+        for line in results:
+            output.write(line)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("path_to_dir", 
                         help="Specify the path of the data set")
+    parser.add_argument("n", 
+                        help="The number of runs for each data set")
     args = parser.parse_args()
+    results = []
+    def res_app(res):
+        results.append(res)
     if not os.path.isdir(args.path_to_dir):
         print("That's not a folder.")
     else:
-        test(args.path_to_dir)
+        pool = Pool()
+        files = get_files(args.path_to_dir)
+
+
+        for fs, ground_truth in files:
+            for f in fs:
+                for i in xrange(int(args.n)):
+                    pool.apply_async(Run(ground_truth, Method.luv), 
+                        args=(f, ),
+                        callback=res_app)
+                    pool.apply_async(Run(ground_truth, Method.dissolve), 
+                        args=(f, ), 
+                        callback=res_app)
+                    pool.apply_async(Run(ground_truth, Method.rank), 
+                        args=(f, ),
+                        callback=res_app)
+                    pool.apply_async(Run(ground_truth, Method.prop), 
+                        args=(f, ),
+                        callback=res_app)
+        pool.close()
+        pool.join()
+        output_to_file('results/results.txt', results)
+        print("Tests ended just fine.")
