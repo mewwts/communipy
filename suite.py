@@ -97,7 +97,8 @@ def initialize_graph(f):
     return G
 
 def output_to_file(filename, results):
-    with open(filename, 'ra') as output:
+
+    with open(filename, 'a+') as output:
         if not output.readline():
             output.write("File\tMI\tNMI\tVI\tNVI\tn_found\tn_known\tmethod\n")
         for line in results:
