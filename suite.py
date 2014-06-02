@@ -33,10 +33,10 @@ def get_files(dir):
         dir_files = []
         for f in files:
             if f.endswith('truth.dat'):
-                truth = "".join([root, f])
+                truth = "/".join([root, f])
             elif (not f.endswith('walk.dat') and
                   not f.endswith('.DS_Store')):
-                dir_files.append("".join([root, f]))
+                dir_files.append("/".join([root, f]))
         if files:
             file_list.append((dir_files, truth))
     return file_list
@@ -92,7 +92,7 @@ def initialize_graph(f):
     G = Graph(A,
               0.5*A.sum(),
               A.shape[1],
-              np.array(A.sum(axis=1), dtype=float).reshape(-1,).tolist() 
+              np.array(A.sum(axis=1), dtype=float).reshape(-1,).tolist()
               )
     return G
 
