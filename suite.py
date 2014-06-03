@@ -68,7 +68,7 @@ class Run(object):
             labelprop.propagate(G, arguments)
             found = arguments.exporter.comlist[:, -1]
             numcoms = np.unique(found)
-            results = tester.ters(found, known)
+            results = tester.test(found, known)
         else:
             community_detect(G, arguments)
             hierarchy = arguments.exporter.comlist
