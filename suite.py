@@ -67,11 +67,11 @@ class Run(object):
         if self.method == Method.prop:
             labelprop.propagate(G, arguments)
             found = arguments.exporter.comlist[:, -1]
-            numcoms = np.unique(found)
+            numcoms = len(np.unique(found))
             results = tester.test(found, known)
         else:
             community_detect(G, arguments)
-            hierarchy = arguments.exporter.comlist
+            hierarchy = arguments.exporter.comlist[:, 1:] # Exclude the 0...n col
             colresult = np.empty(shape=(hierarchy.shape[1], 4))
             lengths = []
 
