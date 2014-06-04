@@ -56,7 +56,7 @@ def joint_density(found, known):
 
     n_found = len(np.unique(found))
     n_known = len(np.unique(known))
-    print("{} x {} density".format(n_found, n_known))
+    # print("{} x {} density".format(n_found, n_known))
 
     # coo-matrix will sum duplicate entries
     confusion = np.asarray(
