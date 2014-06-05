@@ -33,10 +33,10 @@ def get_files(dir):
         dir_files = []
         for f in files:
             if f.endswith('truth.dat'):
-                truth = "/".join([root, f])
-            elif (not f.endswith('walk.dat') and
+                truth = os.path.join(root, f)
+            elif (not f.endswith('walk.mat') and
                   not f.endswith('.DS_Store')):
-                dir_files.append("/".join([root, f]))
+                dir_files.append(os.path.join(root, f))
         if files:
             file_list.append((dir_files, truth))
     return file_list
