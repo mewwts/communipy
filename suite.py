@@ -18,9 +18,9 @@ def get_right_column(comlist, ncom):
             smallest = (i, uniq - ncom)
     return comlist[:, smallest[0]]
 
-def get_best_column(results):
+def get_best_column(result_matrix):
     """ Get the result that minimizes the NVI. """
-    indices = results[:, -2].argmin(axis=0)
+    indices = result_matrix[:, -2].argmin(axis=0)
     try:
         idx = indices[0]
     except IndexError:
@@ -57,10 +57,8 @@ class Run(object):
         print(self.method)
         print(f)
         G = initialize_graph(f)
-        results = [[],[],[],[]]
         known = tester.parse(self.truth)
         known -= 1
-        numcoms = []
         exporter = Exporter(f, G.n, False)
         arguments = Arguments(exporter, None, None, 0.02,
                               False, False, self.method)
@@ -68,7 +66,7 @@ class Run(object):
             labelprop.propagate(G, arguments)
             found = arguments.exporter.comlist[:, -1]
             numcoms = len(np.unique(found))
-            results = tester.test(found, known)
+            test_results = tester.test(found, known)
         else:
             community_detect(G, arguments)
             hierarchy = arguments.exporter.comlist[:, 1:] # Exclude the 0...n col
@@ -80,11 +78,11 @@ class Run(object):
                 colresult[j, :] = tester.test(column, known)
 
             idx = get_best_column(colresult)
-            results = colresult[idx, :]
+            test_results = colresult[idx, :]
             numcoms = lengths[idx]
                 
-        return format(os.path.basename(f), results[0], results[1],
-                results[2], results[3], numcoms,
+        return format(os.path.basename(f), test_results[0], test_results[1],
+                test_results[2], test_results[3], numcoms,
                 len(np.unique(known)), str(arguments.method).split('.')[-1])
 
 def initialize_graph(f):
@@ -97,10 +95,12 @@ def initialize_graph(f):
     return G
 
 def output_to_file(filename, results):
-
     with open(filename, 'a+') as output:
+        output.seek(0)
         if not output.readline():
             output.write("File\tMI\tNMI\tVI\tNVI\tn_found\tn_known\tmethod\n")
+        else:
+            output.seek(0, 2) # Put cursor at the end of the file.
         for line in results:
             output.write(line)
 
@@ -111,9 +111,9 @@ if __name__ == '__main__':
     parser.add_argument("n", 
                         help="The number of runs for each data set")
     args = parser.parse_args()
-    results = []
+    result_strings = []
     def res_app(res):
-        results.append(res)
+        result_strings.append(res)
     if not os.path.isdir(args.path_to_dir):
         print("That's not a folder.")
     else:
@@ -138,5 +138,5 @@ if __name__ == '__main__':
                         callback=res_app)
         pool.close()
         pool.join()
-        output_to_file('results/results.txt', results)
+        output_to_file('results/results.txt', result_strings)
         print("Tests ended just fine.")
