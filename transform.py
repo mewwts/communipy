@@ -9,7 +9,6 @@ def matrix_power(mtx, exp):
     """ Return the exp power of (mtx + I) """
     I = sparse.identity(mtx.shape[1], dtype=float, format='csr')
     A = mtx + I
-
     for i in xrange(int(exp)-1):
         A = A.dot(mtx + I)
 
@@ -71,7 +70,8 @@ def power_main():
                         action="store_true")
     parser.add_argument("-e", "--exp", help="Calculate exp(A)",
                         action="store_true")
-    parser.add_argument("-r", "--restrict", help="Restrict the elements of the "
+    parser.add_argument("-r", "--restrict", 
+                        help="Restrict the elements of the "
                         "transformed matrix to the coordinates of the nonzero "
                         "elements of the original matrix.",
                         action="store_true")
@@ -116,7 +116,7 @@ def power_main():
                 mat = edge_restriction(mat, A)
 
             if out_path:
-                io.savemat(out_path, {'mat': A}, do_compression=True,
+                io.savemat(out_path, {'mat': mat}, do_compression=True,
                            oned_as='row')
     else:
         print("Specify a valid input-file")
