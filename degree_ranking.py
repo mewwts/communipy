@@ -10,10 +10,12 @@ def degree_rank(G, C, q, arguments):
     knbs = [set([]) for i in xrange(n)]
     not_seen = set(xrange(n))
     while True:
-        new_q = degree_rank_inner(G, C, knbs, 
-            consider, not_seen, q, arguments)
-        not_seen = set(xrange(n))
-        if new_q - q < arguments.tsh:
+        new_q, moved = degree_rank_inner(G, C, knbs, 
+                                         consider, not_seen, q, arguments)
+        not_seen = set(xrange(n))# | moved
+        # consider = list(set([j for i in not_seen for j in knbs[i]]))
+        # consider = [consider[i] for i in rank((k[j] for j in consider))]
+        if new_q - q <= arguments.tsh:
             break
         q = new_q
     return new_q
@@ -40,7 +42,6 @@ def degree_rank_inner(G, C, knbs, consider, not_seen, old_q, args):
     q = old_q
     moved = set([])
     index = 0
-
     queue = deque([consider[index]])
     while queue:
         i = queue.popleft()
@@ -54,6 +55,7 @@ def degree_rank_inner(G, C, knbs, consider, not_seen, old_q, args):
                 movein, moveout = get_gain(G, C, j, C.nodes[i])
                 if movein + moveout > 0:
                     moved.add(j)
+                    moved.add(i)
                     C.move(j, C.nodes[i], k[j])
                     q += movein + moveout
 
@@ -63,15 +65,8 @@ def degree_rank_inner(G, C, knbs, consider, not_seen, old_q, args):
                     index += 1
                     next = consider[index]
                     if next not in moved:
+                        queue.append(next)
                         break
             except IndexError:
-                return q
-            queue.append(next)
-            # try:
-            #     index += 1
-            #     next = consider[index]
-            # except IndexError:
-            #     return q
-            # queue.append(next)
-        else:
-            return q
+                pass
+    return q, moved
