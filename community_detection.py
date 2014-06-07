@@ -1,4 +1,5 @@
 from utils import Method
+from labels import Labels
 from communities import Communities
 from modularity_communities import ModCommunities as ModComs
 from louvain import louvain
@@ -24,7 +25,7 @@ def community_detect(G, args):
             C = ModComs(xrange(G.n), G)
             q = community_dissolve(G, C, old_q, args)
         elif args.method == Method.rank:
-            C = Communities(xrange(G.n), G.k)
+            C = Labels(xrange(G.n), G.k, G.A.diagonal())
             q = degree_rank(G, C, old_q, args)
         else:
             raise Exception("What are you doing here.")
