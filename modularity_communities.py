@@ -8,7 +8,7 @@ class ModCommunities(Labels):
         """
         Modularity holds {key: (0/1, priority)} pairs
         """
-        super(ModCommunities, self).__init__(iterable, G.k)
+        super(ModCommunities, self).__init__(iterable, G.k, G.A.diagonal())
         self.modularity = heapdict()
         self.node_mods = {}
         self.changed = False
