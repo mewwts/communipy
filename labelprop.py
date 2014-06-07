@@ -16,7 +16,7 @@ def propagate(G, args):
     G = Graph(G.A, len(G.A.data) / 2, G.n, k)
     C = dpa(G, args)
     print("Found {} communities".format(len(C.dict_renamed)))
-    print("Modularity = {}".format(modularity.modularity(G.A, G.k, G.m, C)))
+    print("Modularity = {}".format(modularity.modularity(G, C)))
     if args.exporter:
         args.exporter.write_nodelist(C.dict_renamed)
         args.exporter.close()
@@ -103,7 +103,7 @@ def dpa(G, args):
     # Run defensive dalpa
     defensive_C = Labels(xrange(G.n), G.k, G.A.diagonal())
     dalpa(G, defensive_C, offensive=False)
-    defensive_Q = modularity.modularity(G.A, G.k, G.m, defensive_C)
+    defensive_Q = modularity.modularity(G, defensive_C)
 
     # Construct the community network
     A_C = community_network(G.A, defensive_C.dict_renamed)
@@ -116,7 +116,7 @@ def dpa(G, args):
     # Run offensive dalpa on the community network
     offensive_C = Labels(xrange(G_C.n), G_C.k, G_C.A.diagonal())
     dalpa(G_C, offensive_C, offensive=True)
-    offensive_Q = modularity.modularity(G_C.A, G_C.k, G_C.m, offensive_C)
+    offensive_Q = modularity.modularity(G_C, offensive_C)
 
     # if the modularity of the offensive run is higher than the modularity
     # of the defensive run, we wish to transfer the labels/communities of
@@ -149,7 +149,6 @@ def dpa(G, args):
         return defensive_C
     else:
         print "RECURSING"
-        print G.m
         # print defensive_C.dict
         largest = list(defensive_C[defensive_C.largest])
         largest.sort()
@@ -170,7 +169,7 @@ def dpa(G, args):
         for c, nodes in recursive_C:
             new_C.insert_community([mapping[node] for node in nodes], G.k)
 
-        new_Q = modularity.modularity(G.A, G.k, G.m, new_C)
+        new_Q = modularity.modularity(G, new_C)
 
         if new_Q > defensive_Q:
             defensive_C = new_C
@@ -180,7 +179,7 @@ def dpa(G, args):
 def bdpa(G, C):
     print "Running BDPA"
     dalpa(G, C, offensive=False)
-    defensive_Q = modularity.modularity(G.A, G.k, G.m, C)
+    defensive_Q = modularity.modularity(G, C)
     print "defensive_Q = {} ".format(defensive_Q)
     new_C = copy.deepcopy(C)
     for c, nodes in C:
@@ -198,7 +197,7 @@ def bdpa(G, C):
             if new_C.nodes[i] == new_C.nodes[j]:
                 new_C.internal[i] += 1
     dalpa(G, new_C, True)
-    offensive_Q = modularity.modularity(G.A, G.k, G.m, new_C)
+    offensive_Q = modularity.modularity(G, new_C)
     print "offensive_Q = {} ".format(offensive_Q)
     if offensive_Q > defensive_Q:
         return new_C

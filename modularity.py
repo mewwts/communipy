@@ -7,14 +7,15 @@ def diagonal_modularity(diag, k, m):
     """Calculates the modularity when all vertices are in their own community"""
     ks = np.array(k)
     return (1.0/(2*m))*nr.evaluate("sum(diag)") -(1/(4*m**2))*nr.evaluate("sum(ks**2)")
-    
-def modularity(A, k, m, C):
+
+def modularity(G, C):
     """ 
     Calculates the global modularity by summing over each community. 
     It is very slow, use louvain.second_phase and diagonal_modularity
     instead
 
     """
+    A, m, n, k = G
     q = 0.0
     for com, c in C:
         rowslice = A[c,:]
