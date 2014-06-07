@@ -47,8 +47,8 @@ class Communities(object):
         newkey = self._unused_key()
         self.communities[newkey] = set([])
         self.strength[newkey] = 0
-        for i, node in enumerate(nodes):
-            self.move(node, newkey, k[i])
+        for node in nodes:
+            self.move(node, newkey, k[node])
 
     def delete_community(self, c, k):
         nodes = self.communities[c].copy()
