@@ -123,14 +123,16 @@ if __name__ == '__main__':
 
         for fs, ground_truth in files:
             for f in fs:
+                # dissolve and rank are deterministic
+                pool.apply_async(Run(ground_truth, Method.dissolve), 
+                    args=(f, ), 
+                    callback=res_app)
+                pool.apply_async(Run(ground_truth, Method.rank), 
+                    args=(f, ),
+                    callback=res_app)
                 for i in xrange(int(args.n)):
+                    #Louvain and labelprop are not, so we average
                     pool.apply_async(Run(ground_truth, Method.luv), 
-                        args=(f, ),
-                        callback=res_app)
-                    pool.apply_async(Run(ground_truth, Method.dissolve), 
-                        args=(f, ), 
-                        callback=res_app)
-                    pool.apply_async(Run(ground_truth, Method.rank), 
                         args=(f, ),
                         callback=res_app)
                     pool.apply_async(Run(ground_truth, Method.prop), 
