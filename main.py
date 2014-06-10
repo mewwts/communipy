@@ -29,8 +29,6 @@ def initialize(A, filepath, args):
     tsh = args.treshold if args.treshold else 0.02
     verbose = args.verbose if args.verbose else False
     dump = args.dump if args.dump else False
-    
-
 
     if args.prop:
         import labelprop
@@ -44,7 +42,7 @@ def initialize(A, filepath, args):
 
     arguments = Arguments(exporter, cytowriter, analyzer, 
                           tsh, verbose, dump, method)
-    
+
     if arguments.verbose:
         print("File loaded. {} nodes in the network and total weight "
               "is {}".format(G.n, G.m))
@@ -65,10 +63,17 @@ def get_graph(filepath):
         import networkx as nx 
         A = nx.to_scipy_sparse_matrix(nx.read_gml(filepath), dtype=float)
     elif ending == '.dat':
-        adjlist = np.genfromtxt(filepath, dtype=int)
-        adjlist -= 1 # 0 indexing
-        A = sparse.coo_matrix((np.ones(adjlist.shape[0]), 
-                    (adjlist[:,0], adjlist[:,1])), dtype=float).tocsr()
+        adjlist = np.genfromtxt(filepath)
+        if np.min(adjlist[:,:-1]) == 1:
+            adjlist[:, :-1] -= 1 # 0 indexing
+        if adjlist.shape[1] == 2:
+            data = np.ones(adjlist.shape[0])
+        else:
+            data = adjlist[:, 2]
+        A = sparse.coo_matrix((data, 
+                              (np.array(adjlist[:,0], dtype=int),
+                              np.array(adjlist[:,1], dtype=int))),
+                              dtype=float).tocsr()            
 
     elif ending == '.gz' or ending == '.txt':
         filename = os.path.splitext(filename)[0]
