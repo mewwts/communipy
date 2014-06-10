@@ -7,20 +7,17 @@ def degree_rank(G, C, q, arguments):
     k = G.k
     n = G.n
     consider = rank(k) 
-    knbs = [set([]) for i in xrange(n)]
     not_seen = set(xrange(n))
     while True:
-        new_q, moved = degree_rank_inner(G, C, knbs, 
+        new_q, moved = degree_rank_inner(G, C, 
                                          consider, not_seen, q, arguments)
-        not_seen = set(xrange(n))# | moved
-        # consider = list(set([j for i in not_seen for j in knbs[i]]))
-        # consider = [consider[i] for i in rank((k[j] for j in consider))]
+        not_seen = set(xrange(n))
         if new_q - q <= arguments.tsh:
             break
         q = new_q
     return new_q
 
-def degree_rank_inner(G, C, knbs, consider, not_seen, old_q, args):
+def degree_rank_inner(G, C, consider, not_seen, old_q, args):
     """
     Finds the communities of A by the degree-rank method.
 
@@ -47,10 +44,8 @@ def degree_rank_inner(G, C, knbs, consider, not_seen, old_q, args):
         i = queue.popleft()
         not_seen.discard(i)
         nbs = A.indices[A.indptr[i]:A.indptr[i+1]]
-
         for j in nbs:
             not_seen.discard(j) 
-            knbs[j].add(i)
             if C.nodes[i] != C.nodes[j] and j not in moved:
                 movein, moveout = get_gain(G, C, j, C.nodes[i])
                 if movein + moveout > 0:
