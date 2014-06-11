@@ -64,12 +64,15 @@ def get_graph(filepath):
         A = nx.to_scipy_sparse_matrix(nx.read_gml(filepath), dtype=float)
     elif ending == '.dat':
         adjlist = np.genfromtxt(filepath)
-        if np.min(adjlist[:,:-1]) == 1:
-            adjlist[:, :-1] -= 1 # 0 indexing
+        
         if adjlist.shape[1] == 2:
             data = np.ones(adjlist.shape[0])
+            if np.min(adjlist) == 1:
+                adjlist -= 1 # 0 indexing
         else:
             data = adjlist[:, 2]
+            if np.min(adjlist[:, :-1]) == 1:
+                adjlist[:, :-1] -= 1 # 0 indexing
         A = sparse.coo_matrix((data, 
                               (np.array(adjlist[:,0], dtype=int),
                               np.array(adjlist[:,1], dtype=int))),
