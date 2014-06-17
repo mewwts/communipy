@@ -27,7 +27,6 @@ def luvxdiss(G, C, init_q, tsh):
             (c, movein, moveout) = mod_gain(G, C, i)
             gain = movein - moveout + 2*C.node_mods[i]
             if gain > 0:
-                # no_moves.discard(C.nodes[i])
                 no_moves.discard(c)
                 move(i, c, k[i], movein, moveout, C.node_mods[i])
                 new_q += gain
@@ -55,7 +54,6 @@ def dissolve(G, C, no_moves):
             (node2c, c2node, movein, moveout, quv, best) = mod.mass_modularity(G, C, C[c], c)
             q_c = C.modularity[c][1]
             if sum(movein.values()) + sum(quv.values()) > q_c:
-                # print "DID it"
                 for dest, nodes in c2node.iteritems():
                     for i in nodes:
                         move(i, dest)
