@@ -3,8 +3,8 @@ from labels import Labels
 from communities import Communities
 from modularity_communities import ModCommunities as ModComs
 from louvain import louvain
-from dissolve import community_dissolve
 from degree_ranking import degree_rank
+from dissolve import luvxdiss
 import modularity
 import numpy as np
 from utils import Graph
@@ -23,7 +23,7 @@ def community_detect(G, args):
             q = louvain(G, C, old_q, args.tsh)
         elif args.method == Method.dissolve:
             C = ModComs(xrange(G.n), G)
-            q = community_dissolve(G, C, old_q, args)
+            q = luvxdiss(G, C, old_q, args.tsh)
         elif args.method == Method.rank:
             C = Labels(xrange(G.n), G.k, G.A.diagonal())
             q = degree_rank(G, C, old_q, args)
