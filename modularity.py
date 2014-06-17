@@ -86,6 +86,40 @@ def modularity_gain(G, C, i):
 
     return (max_movein[0], max_movein[1],  moveout)
 
+def modularity_gain_new_notation(G, C, i):
+    """
+    The new notation:
+    moveout now includes q_i
+
+    """
+    A, m, n, k = G
+    indices = A.indices[A.indptr[i]:A.indptr[i+1]]
+    data = A.data[A.indptr[i]:A.indptr[i+1]]
+
+    movein = {}
+    k_i = k[i]
+    c_i = C.nodes[i]
+    movein = {}
+    moveout = -2*k_i*C.strength[c_i]/((2*m)**2)
+    max_movein = (-1, -1.0)
+    for ind, j in enumerate(indices):
+        aij = data[ind]
+        c_j = C.nodes[j]
+        if c_j == c_i:
+            moveout += aij / m
+            continue
+        try:
+            movein[c_j] += aij/m
+        except KeyError:
+            movein[c_j] = aij/m - 2*k_i*C.strength[c_j]/((2*m)**2)
+
+        if movein[c_j] > max_movein[1]:
+            max_movein = (c_j, movein[c_j])
+
+    if not movein:
+        return (-1, -100.0, 0.0)
+    return (max_movein[0], max_movein[1],  moveout)
+
 def get_gain(G, C, i, dest):
     """
     Calculates and returns the gain of moving i to dest.
