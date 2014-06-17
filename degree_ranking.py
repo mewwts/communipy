@@ -1,17 +1,13 @@
-from collections import deque
 from modularity import get_gain
 from utils import rank
 
 def degree_rank(G, C, q, arguments):
-
-    k = G.k
-    n = G.n
-    consider = rank(k) 
-    not_seen = set(xrange(n))
+    consider = rank(G.k) 
+    not_seen = set(xrange(G.n))
     while True:
         new_q, moved = degree_rank_inner(G, C, 
                                          consider, not_seen, q, arguments)
-        not_seen = set(xrange(n))
+        not_seen = set(xrange(G.n))
         if new_q - q <= arguments.tsh:
             break
         q = new_q
@@ -39,9 +35,9 @@ def degree_rank_inner(G, C, consider, not_seen, old_q, args):
     q = old_q
     moved = set([])
     index = 0
-    queue = deque([consider[index]])
-    while queue:
-        i = queue.popleft()
+    i = consider[index]
+
+    while True:
         not_seen.discard(i)
         nbs = A.indices[A.indptr[i]:A.indptr[i+1]]
         for j in nbs:
@@ -55,13 +51,15 @@ def degree_rank_inner(G, C, consider, not_seen, old_q, args):
                     q += movein + moveout
 
         if not_seen:
-            try:
-                while True:
-                    index += 1
+            while True:
+                index += 1
+                try:
                     next = consider[index]
-                    if next not in moved:
-                        queue.append(next)
-                        break
-            except IndexError:
-                pass
-    return q, moved
+                except IndexError:
+                    return q, moved
+        
+                if next not in moved:
+                    i = next
+                    break
+        else:
+            return q, moved
