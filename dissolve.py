@@ -1,5 +1,11 @@
 import modularity as mod
 import functions as fns
+# from louvain import louvain
+
+def community_dissolve(G, C, init_q, tsh):
+    luv_q = luvxdiss(G, C, init_q, tsh)
+    dis_q = dissolve(G, C, luv_q)
+    return dis_q
 
 def luvxdiss(G, C, init_q, tsh):
     """
@@ -30,30 +36,42 @@ def luvxdiss(G, C, init_q, tsh):
                 no_moves.discard(c)
                 move(i, c, k[i], movein, moveout, C.node_mods[i])
                 new_q += gain
-        if no_moves:
-            dissolve(G, C, no_moves)
-            new_q = C.network_modularity
-        
+ 
         if new_q - old_q < tsh:
             break
     return new_q
 
-def dissolve(G, C, no_moves):
+def dissolve(G, C, init_q):
+
     def move(i, dest):
         """ Move vertex i to dest in our community object """
         if dest != -1:
-            C.move(i, dest, G.k[i], movein[i],
+            C.move(i, dest, k[i], movein[i],
                    moveout[i], quv[dest])
         else:
-            C.move(i, dest, G.k[i], movein[i],
+            C.move(i, dest, k[i], movein[i],
                    moveout[i], C.node_mods[i])
         quv[dest] = 0.00 # Only add this the first time.
 
-    for c in no_moves:
-        if len(C[c]) > 1:
-            (node2c, c2node, movein, moveout, quv, best) = mod.mass_modularity(G, C, C[c], c)
-            q_c = C.modularity[c][1]
-            if sum(movein.values()) + sum(quv.values()) > q_c:
-                for dest, nodes in c2node.iteritems():
-                    for i in nodes:
-                        move(i, dest)
+    k = G.k
+    q = init_q
+
+    while True:
+        c, (seen, q_c) = C.pop()
+
+        if seen:
+            return C.network_modularity
+
+        (node2c, c2node, movein,
+         moveout, quv, best) = mod.mass_modularity(G, C, C[c], c)
+
+        if sum(movein.values()) + sum(quv.values()) > q_c:
+            for dest, nodes in c2node.iteritems():
+                for i in nodes:
+                    move(i, dest)
+        else:
+            dest = node2c[best]
+            if dest != -1:
+                C.move(best, dest, k[best], movein[best], moveout[best], C.node_mods[best])
+
+    return q

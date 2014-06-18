@@ -4,7 +4,7 @@ from communities import Communities
 from modularity_communities import ModCommunities as ModComs
 from louvain import louvain
 from degree_ranking import degree_rank
-from dissolve import luvxdiss
+from dissolve import community_dissolve
 import modularity
 import numpy as np
 from utils import Graph
@@ -12,7 +12,7 @@ from scipy import sparse
 import time
 
 def community_detect(G, args):
-
+    
     i = 1
     t = time.time()
     old_q = modularity.diagonal_modularity(G.A.diagonal(), G.k, G.m)
@@ -23,7 +23,7 @@ def community_detect(G, args):
             q = louvain(G, C, old_q, args.tsh)
         elif args.method == Method.dissolve:
             C = ModComs(xrange(G.n), G)
-            q = luvxdiss(G, C, old_q, args.tsh)
+            q = community_dissolve(G, C, old_q, args.tsh)
         elif args.method == Method.rank:
             C = Labels(xrange(G.n), G.k, G.A.diagonal())
             q = degree_rank(G, C, old_q, args)
