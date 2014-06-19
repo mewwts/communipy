@@ -12,7 +12,17 @@ from scipy import sparse
 import time
 
 def community_detect(G, args):
-    
+    """
+    The outer loop that does all modularity based community detection
+    algorithms. Runs the respective methods, and constructs the
+    community network.
+
+    Args:
+    G: Graph named tuple
+    args: All arguments, including the args.method specifying which
+          method to run.
+
+    """
     i = 1
     t = time.time()
     old_q = modularity.diagonal_modularity(G.A.diagonal(), G.k, G.m)

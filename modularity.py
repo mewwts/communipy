@@ -1,18 +1,33 @@
 from collections import defaultdict
 import numpy as np
 import numexpr as nr
-from operator import itemgetter
 
 def diagonal_modularity(diag, k, m):
-    """Calculates the modularity when all vertices are in their own community"""
+    """ 
+    Calculates the modularity when all vertices are in their own 
+    community.
+
+    Args:
+    diag: numpy array of length n holding the diagonal entries of some 
+          matrix
+    k: degree sequence of the above mentioned matrix. n long.
+    m: The total weight of the graph. 0.5 * A.sum()
+
+    """
     ks = np.array(k)
     return (1.0/(2*m))*nr.evaluate("sum(diag)") -(1/(4*m**2))*nr.evaluate("sum(ks**2)")
 
 def modularity(G, C):
     """ 
     Calculates the global modularity by summing over each community. 
-    It is very slow, use louvain.second_phase and diagonal_modularity
-    instead
+    Should be deprecated.
+
+    Args:
+    G: Graph named tuple
+    C: Community structure
+
+    Returns:
+    q: Modularity of the network with the provided community structure
 
     """
     A, m, n, k = G
@@ -42,6 +57,21 @@ def single_node_modularity(G, i):
     return G.A[i,i]/(2*G.m) - (G.k[i]/(2*G.m))**2
 
 def modularity_of_partition(A, k, m, nodes):
+    """
+    Calculates the modularity of the group consisting of the vertices in
+    'nodes'. 
+    
+    Args:
+
+    A: Adjacency matrix of the graph
+    k: Degree sequence of the graph
+    m: The total weight of the graph. 0.5 * A.sum()
+    nodes: A list of vertices
+
+    Returns:
+    q: The modularity of the partition defined by 'nodes'
+
+    """
     rowslice = A[nodes,:]
     data = rowslice.data
     indices = rowslice.indices
@@ -52,7 +82,15 @@ def modularity_of_partition(A, k, m, nodes):
 def modularity_gain(G, C, i):
     """"
     Calculates the modularity gain of moving vertex i into the 
-    community of its neighbors.
+    community of its neighbors. NB: Follows the notation of Olsen (2013)
+
+    Args:
+    G: Graph named tuple
+    C: Community structure
+    i: A vertex whose neighbors we iterate over.
+
+    Returns:
+    Destination, modularity gain and modularity loss of the move. 
 
     """
     A, m, n, k = G
@@ -88,8 +126,16 @@ def modularity_gain(G, C, i):
 
 def modularity_gain_new_notation(G, C, i):
     """
-    The new notation:
-    moveout now includes q_i
+    The new notation essentially means that moveout now includes q_i.
+    
+    Args:
+    G: Graph named tuple
+    C: Community structure
+    i: A vertex whose neighbors we iterate over.
+
+    Returns:
+    Destination, modularity gain of Destination and modularity loss
+    the old community of i.
 
     """
     A, m, n, k = G
@@ -130,7 +176,8 @@ def get_gain(G, C, i, dest):
     C: the community object
 
     Returns:
-    A float representing the modularity of the move.
+    Two floats, movein and moveout, such that the modularity after the 
+    move is q += movein + moveout.
 
     """
     A, m, n, k = G

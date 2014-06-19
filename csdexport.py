@@ -5,7 +5,11 @@ from math import ceil, log, floor
 import numpy as np
 import cPickle as pickle
 
-class Csdwriter:
+class Csdwriter(object):
+    """
+    Class for outputting Component Size Distributions
+    
+    """
     def __init__(self, filename):
         self.passes = []
         self.i = 0

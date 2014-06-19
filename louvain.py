@@ -3,8 +3,8 @@ import functions as fns
 
 def louvain(G, C, init_q, tsh):
     """
-    Find the communities of the graph represented by A using the Louvain
-    method.
+    Find the communities of the graph represented by A using the first 
+    phase of the Louvain method.
 
     Args:
     A: Adjacency matrix in CSR format

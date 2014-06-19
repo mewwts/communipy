@@ -3,6 +3,11 @@ import functions as fns
 # from louvain import louvain
 
 def community_dissolve(G, C, init_q, tsh):
+    """
+    Run first the first phase of Louvain(with a bit modified notation),
+    then run dissolve once. 
+
+    """
     luv_q = luvxdiss(G, C, init_q, tsh)
     dis_q = dissolve(G, C, luv_q)
     return dis_q
@@ -42,7 +47,20 @@ def luvxdiss(G, C, init_q, tsh):
     return new_q
 
 def dissolve(G, C, init_q):
+    """
+    Extracts the community with the lowest modularity and tries to
+    'dissolve' it (move all vertices) repeatedly. When all communities
+    have been considered it is finished.
 
+    Args:
+    G: Graph named tuple
+    C: Community structure
+    init_q: the initial modularity
+
+    Returns:
+    q: the modularity of the network after a round of dissolve
+
+    """
     def move(i, dest):
         """ Move vertex i to dest in our community object """
         if dest != -1:

@@ -8,7 +8,8 @@ class Exporter(object):
     def __init__(self, filename, n, prop=False):
         writename = os.path.basename(filename)
         propstring = "-prop" if prop else ""
-        self.path = "".join(["results/", writename, propstring,"-communities.txt"])
+        self.path = "".join(["results/", writename,
+                            propstring,"-communities.txt"])
         self.comlist = np.array(xrange(n))
         self.n = n
 

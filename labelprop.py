@@ -11,7 +11,8 @@ from community_detection import community_network
 MAX_ITER = 100
 
 def propagate(G, args):
-    G.A.data = np.repeat(1, G.A.data.shape[0])
+    """ Start the Diffusion and Propagation Algorithm """
+    G.A.data = np.repeat(1, G.A.data.shape[0]) # convert to unweighted
     k = np.array(G.A.sum(axis=1), dtype=float).reshape(-1,).tolist()
     G = Graph(G.A, len(G.A.data) / 2, G.n, k)
     C = dpa(G, args)
@@ -51,17 +52,13 @@ def dalpa(G, C, offensive=False):
             old = C.nodes[i]
 
             if scores:
-                
                 new = max(scores.iteritems(), key=itemgetter(1))[0]
 
                 if scores[old] < scores[new]:
                     C.move(i, new, k[i])
-
                     dist = n * 10
                     C.p[i] = 0.0
                     C.internal[i] = 0
-
-                    
                     for v in A.indices[A.indptr[i]:A.indptr[i+1]]:
                         if v != i:
                             if C.nodes[v] == new:

@@ -11,6 +11,17 @@ from utils import Arguments
 from utils import Graph
 
 def initialize(A, filepath, args):
+    """
+    Set up a Graph (named tuple) and instantiate some objects based on 
+    the arguments passed to the program, then run the algorithm 
+    specified by args.method.
+
+    Args:
+    A: A symmetric SciPy CSR-matrix
+    filepath: Path to the file from which A was loaded
+    args: All the arguments provided to the program
+
+    """
     filename, ending = os.path.splitext(filepath)
 
     k = np.array(A.sum(axis=1), dtype=float).reshape(-1,).tolist()
@@ -52,6 +63,16 @@ def initialize(A, filepath, args):
         community_detect(G, arguments)
 
 def get_graph(filepath):
+    """
+    Load the matrix saved at filepath.
+
+    Args:
+    filepath: path to file holding a sparse matrix
+
+    Returns:
+    A: SciPy CSR matrix
+
+    """
     filename, ending = os.path.splitext(filepath)
     if ending == '.mat':
         from scipy import io
@@ -89,6 +110,12 @@ def get_graph(filepath):
     return A
 
 def main():
+    """
+    Parses all arguments passed in the command line and loaded the graph
+    located at args.path_to_file. Calls initialize if all arguments
+    are valid
+
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("path_to_file", 
                         help="Specify the path of the data set")

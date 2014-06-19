@@ -2,6 +2,7 @@ from modularity import get_gain
 from utils import rank
 
 def degree_rank(G, C, q, arguments):
+    """ Finds the communities of A by the degree-rank method. """
     consider = rank(G.k) 
     not_seen = set(xrange(G.n))
     while True:
@@ -15,20 +16,19 @@ def degree_rank(G, C, q, arguments):
 
 def degree_rank_inner(G, C, consider, not_seen, old_q, args):
     """
-    Finds the communities of A by the degree-rank method.
+    Establish communities around the vertices specified in consider.
 
     Args: 
 
     G: Graph object
-    C: community structure
-    knbs: list of the high degree neighbors of vertex i
-    not_seen: set of nodes marked as not not seen
-    consider: the vertices we are considering
-    args: Namedtuple with args parsed by main.
+    C: Community structure
+    consider: The vertices we are establish communities around
+    not_seen: Set of nodes marked as not not seen
+    old_q: The modularity of the network when this function is called
+    args: Namedtuple of arguments
 
     Returns:
-
-    q: modularity
+    q: modularity of the network
 
     """
     A, m, n, k = G

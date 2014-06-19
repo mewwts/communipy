@@ -31,7 +31,7 @@ class ModCommunities(Labels):
 
         Returns:
         (x, y, z): x the key of the community, y=0/y=1, z modularity of
-        the community.
+                   the community.
 
         """
         item_key, (item_seen, item_val) = self.modularity.peekitem()
@@ -103,5 +103,10 @@ class ModCommunities(Labels):
             self.network_modularity += (movein + quv) 
 
     def unsee_all(self):
+        """
+        Sets the first entry in the value tuple to 0 for all entries
+        in the modularity-heapdict. 
+
+        """
         for key, (seen, val) in self.modularity.iteritems():
             self.modularity[key] = (0, val)

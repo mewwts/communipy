@@ -47,33 +47,3 @@ def bin_gcd(a, b):
         return bin_gcd((a - b) >> 1, b)
 
     return bin_gcd((b - a) >> 1, a)
-
-# unsure if working correctly
-def kth_largest(nums, k):
-    if len(nums) <= 5:
-        return sorted(nums)[k-1] 
-
-    B = [kth_largest(nums[i:i+5], (len(nums[i:i+5])/2)+1) for i in xrange(0, len(nums), 5)]
-    pivot = kth_largest(B, (len(B)/2) + 1)
-    l, r, numpiv = _split(nums, pivot)
-
-    if k <= len(l):
-        return kth_largest(l, k)
-    elif k <= len(l) + numpiv:
-        return pivot
-    else:
-        return kth_largest(r, k - len(l) - numpiv)
-
-
-def _split(coos, pivot):
-    left = []
-    right = []
-    numpiv = 0
-    for i in coos:
-        if i < pivot:
-            left.append(i)
-        elif i > pivot:
-            right.append(i)
-        else:
-            numpiv += 1
-    return left, right, numpiv

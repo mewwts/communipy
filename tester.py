@@ -1,5 +1,11 @@
+
+"""
+This module containes measures from information theory to compare
+to clusterings. 
+
+"""
+
 import argparse
-from collections import defaultdict
 import numpy as np
 from scipy import sparse
 from math import log
@@ -70,7 +76,7 @@ def joint_density(found, known):
 def test(found, known):
     N = joint_density(found, known)
     return (mutual_information(N),
-            normalized_mutual_information(N),
+            max_mutual_information(N),
             variation_of_information(N),
             normalized_variation_of_information(N))
 
@@ -92,7 +98,7 @@ def main():
     if args.ext:
         known -= 1    
     N = joint_density(found, known)
-    # print(N)
+
     print("---Testing {} vs. {}---".format(args.found, args.known))
     print("Variation of information (VI): {}".format(variation_of_information(N)))
     print("Normalized VI: {}".format(normalized_variation_of_information(N)))

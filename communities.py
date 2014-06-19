@@ -1,7 +1,22 @@
 
 class Communities(object):
+    """
+    This class represents a community structure. A collection of 
+    disjoint sets(communities) such that all vertices in a graph are found in
+    exactly one such set.
 
+    """
     def __init__(self, iterable, k):
+        """
+        Initialize the community-object by a iterable specifying a 
+        vertex -> community mapping. 
+
+        Args:
+        iterable: Iterable such that the i'th element specifies 
+                  the community affiliation of vertex i.
+        k: Degree sequence of same length as 'iterable'.
+
+        """
         self.nodes = list(iterable)
         self.communities = {}
         self.strength = {}
@@ -17,6 +32,16 @@ class Communities(object):
 
         
     def move(self, i, s, k_i):
+        """
+        Move the vertex i to community s.
+
+        Args:
+        i: the integer label of the vertex that is moving
+        s: the destination(new community) of i
+        k_i: the degree of i
+
+        """
+
         s_i = self.nodes[i]
 
         # remove i from it's community
