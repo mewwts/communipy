@@ -87,9 +87,5 @@ def dissolve(G, C, init_q):
             for dest, nodes in c2node.iteritems():
                 for i in nodes:
                     move(i, dest)
-        else:
-            dest = node2c[best]
-            if dest != -1:
-                C.move(best, dest, k[best], movein[best], moveout[best], C.node_mods[best])
 
     return q
